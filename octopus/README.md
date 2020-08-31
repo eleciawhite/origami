@@ -1,6 +1,6 @@
 To fold the octopus, you must precrease the curved parts and the lines they are adjacent to (octopus_precrese.svg). Crease the straights (straight mountains become the top of the piece) then crease the curves, making sure to let the paper curve as you do it. Sharp edges are better, naturally. As you collapse it down, you'll need to fiddle with the arms so they go up-down-up-down. 
 
-At this point, you'll have the peach colored octopus in the example image. You'll need to shape further to get arms. (Crease pattern coming.)
+At this point, you'll have the peach colored octopus in the example image. You'll need to shape further to get arms. If you turn over the octopus, for maximum arm length, do two sequential swivel folds. (Crease pattern coming.)
 
 ![Example image of several folded octopi](octos_example.jpeg "Ignore the green one")
 
@@ -18,4 +18,5 @@ I used Mitani's [ORI-REVO](http://mitani.cs.tsukuba.ac.jp/origami_application/) 
 # Planned changes
   * Eyes that get precreased.
   * Proper crease pattern so you can see the arm creases.
-  * Try with a circle instead of an octogon cut.
+  * Make one with little circles scored on what will be the bottom to get suckers.
+  
