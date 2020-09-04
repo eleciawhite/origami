@@ -1,5 +1,5 @@
 # origami
-Origami patterns I've developed (with links to other patterns).
+Origami patterns I've developed (with links to other patterns). All pictures are of things I have folded with notes in a readme and filename if it wasn't of my design.
 
 # Additional resources
 

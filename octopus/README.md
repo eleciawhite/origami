@@ -22,4 +22,4 @@ I used Mitani's [ORI-REVO](http://mitani.cs.tsukuba.ac.jp/origami_application/) 
   
   
 # Other patterns
-   * Octopus2 has longer, wavier arms but no arm definition.
+   * Octopus2 has longer, wavier arms but no arm definition. It looks better with 10 arms and a shorter head as a jellyfish (jellyfish3).
