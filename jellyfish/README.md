@@ -22,3 +22,5 @@ If that didn't make sense, I recommend [Mitani's 3D Origami Art](https://www.ama
 
 # Generation
 For each, I saved as crease pattern dfx, opened in ORIPA, saved as SVG. Then used Affinity Designer on ipad to redraw the lines of interest.
+
+I've also been using SVGO [web version](https://jakearchibald.github.io/svgomg/) to clean up SVG files.
