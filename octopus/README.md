@@ -15,8 +15,11 @@ My octopus owes a lot to Jun Mitani's Egg Wrapping for the shape and to [Ilan Ga
 
 I used Mitani's [ORI-REVO](http://mitani.cs.tsukuba.ac.jp/origami_application/) to create the precrease pattern, trying to get long arms and blades that didn't stick out much. I saved as DFX Crease pattern, then used [ORIPA](http://mitani.cs.tsukuba.ac.jp/oripa/) to get to an SVG pattern with lots of extra lines. From there, it went to Affinity Designer (iPad) where I retraced the lines of interest. 
 
+
+
 # Planned changes
-  * Eyes that get precreased.
   * Proper crease pattern so you can see the arm creases.
-  * Make one with little circles scored on what will be the bottom to get suckers.
   
+  
+# Other patterns
+   * Octopus2 has longer, wavier arms but no arm definition.
