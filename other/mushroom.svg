@@ -1,0 +1,171 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000">
+  <path stroke="black" d="M3 219v-3M0 216v3M0 222h1000M0 784h1000M0 222v562M1000 222v562"/>
+  <path stroke="blue" stroke-width="1" d="M83 222l-54 95M83 222l55 95"/>
+  <path stroke="red" stroke-width="1" d="M128 222l25 95M39 222l-26 95"/>
+  <path stroke="blue" stroke-width="1" d="M29 317L0 383M138 317l29 66"/>
+  <path stroke="red" stroke-width="1" d="M153 317l14 66M13 317L0 383M0 317h13"/>
+  <path stroke="blue" stroke-width="1" d="M13 317h16"/>
+  <path stroke="red" stroke-width="1" d="M29 317h109"/>
+  <path stroke="blue" stroke-width="1" d="M138 317h15"/>s
+  <path stroke="red" stroke-width="1" d="M153 317h14"/>
+  <path stroke="blue" stroke-width="1" d="M0 383l1 40M167 383l-2 40"/>
+  <path stroke="red" stroke-width="1" d="M167 383l-1 40M0 383l1 40"/>
+  <path stroke="blue" stroke-width="1" d="M0 383h167M1 423l74 129M165 423L91 552"/>
+  <path stroke="red" stroke-width="1" d="M166 423l-34 129M1 423l34 129M0 423h1"/>
+  <path stroke="blue" stroke-width="1" d="M1 423h0"/>
+  <path stroke="red" stroke-width="1" d="M1 423h164"/>
+  <path stroke="blue" stroke-width="1" d="M165 423h1"/>
+  <path stroke="red" stroke-width="1" d="M166 423h1"/>
+  <path stroke="blue" stroke-width="1" d="M75 552l-6 203M91 552l7 203"/>
+  <path stroke="red" stroke-width="1" d="M132 552l3 203M35 552l-3 203"/>
+  <path stroke="blue" stroke-width="1" d="M0 552h35"/>
+  <path stroke="red" stroke-width="1" d="M35 552h40"/>
+  <path stroke="blue" stroke-width="1" d="M75 552h16"/>
+  <path stroke="red" stroke-width="1" d="M91 552h41"/>
+  <path stroke="blue" stroke-width="1" d="M132 552h35M69 755l15 29M98 755l-16 29"/>
+  <path stroke="red" stroke-width="1" d="M135 755l-7 29M32 755l7 29M0 755h32"/>
+  <path stroke="blue" stroke-width="1" d="M32 755h37"/>
+  <path stroke="red" stroke-width="1" d="M69 755h29"/>
+  <path stroke="blue" stroke-width="1" d="M98 755h37"/>
+  <path stroke="red" stroke-width="1" d="M135 755h32"/>
+  <path stroke="blue" stroke-width="1" d="M250 222l-55 95M250 222l55 95"/>
+  <path stroke="red" stroke-width="1" d="M295 222l25 95M205 222l-25 95"/>
+  <path stroke="blue" stroke-width="1" d="M195 317l-28 66M305 317l28 66"/>
+  <path stroke="red" stroke-width="1" d="M320 317l13 66M180 317l-13 66M167 317h13"/>
+  <path stroke="blue" stroke-width="1" d="M180 317h15"/>
+  <path stroke="red" stroke-width="1" d="M195 317h110"/>
+  <path stroke="blue" stroke-width="1" d="M305 317h15"/>
+  <path stroke="red" stroke-width="1" d="M320 317h13"/>
+  <path stroke="blue" stroke-width="1" d="M167 383l1 40M333 383l-1 40"/>
+  <path stroke="red" stroke-width="1" d="M333 383v40M167 383v40"/>
+  <path stroke="blue" stroke-width="1" d="M167 383h166M168 423l74 129M332 423l-74 129"/>
+  <path stroke="red" stroke-width="1" d="M333 423l-35 129M167 423l35 129M167 423h0"/>
+  <path stroke="blue" stroke-width="1" d="M167 423h1"/>
+  <path stroke="red" stroke-width="1" d="M168 423h164"/>
+  <path stroke="blue" stroke-width="1" d="M332 423h1"/>
+  <path stroke="red" stroke-width="1" d="M333 423h0"/>
+  <path stroke="blue" stroke-width="1" d="M242 552l-6 203M258 552l6 203"/>
+  <path stroke="red" stroke-width="1" d="M298 552l3 203M202 552l-3 203"/>
+  <path stroke="blue" stroke-width="1" d="M167 552h35"/>
+  <path stroke="red" stroke-width="1" d="M202 552h40"/>
+  <path stroke="blue" stroke-width="1" d="M242 552h16"/>
+  <path stroke="red" stroke-width="1" d="M258 552h40"/>
+  <path stroke="blue" stroke-width="1" d="M298 552h35M236 755l15 29M264 755l-15 29"/>
+  <path stroke="red" stroke-width="1" d="M301 755l-7 29M199 755l7 29M167 755h32"/>
+  <path stroke="blue" stroke-width="1" d="M199 755h37"/>
+  <path stroke="red" stroke-width="1" d="M236 755h28"/>
+  <path stroke="blue" stroke-width="1" d="M264 755h37"/>
+  <path stroke="red" stroke-width="1" d="M301 755h32"/>
+  <path stroke="blue" stroke-width="1" d="M417 222l-55 95M417 222l54 95"/>
+  <path stroke="red" stroke-width="1" d="M461 222l26 95M372 222l-25 95"/>
+  <path stroke="blue" stroke-width="1" d="M362 317l-29 66M471 317l29 66"/>
+  <path stroke="red" stroke-width="1" d="M487 317l13 66M347 317l-14 66M333 317h14"/>
+  <path stroke="blue" stroke-width="1" d="M347 317h15"/>
+  <path stroke="red" stroke-width="1" d="M362 317h109"/>
+  <path stroke="blue" stroke-width="1" d="M471 317h16"/>
+  <path stroke="red" stroke-width="1" d="M487 317h13"/>
+  <path stroke="blue" stroke-width="1" d="M333 383l2 40M500 383l-1 40"/>
+  <path stroke="red" stroke-width="1" d="M500 383l-1 40M333 383l1 40"/>
+  <path stroke="blue" stroke-width="1" d="M333 383h167M335 423l74 129M499 423l-74 129"/>
+  <path stroke="red" stroke-width="1" d="M499 423l-34 129M334 423l34 129M333 423h1"/>
+  <path stroke="blue" stroke-width="1" d="M334 423h1"/>
+  <path stroke="red" stroke-width="1" d="M335 423h164"/>
+  <path stroke="blue" stroke-width="1" d="M499 423h0"/>
+  <path stroke="red" stroke-width="1" d="M499 423h1"/>
+  <path stroke="blue" stroke-width="1" d="M409 552l-7 203M425 552l6 203"/>
+  <path stroke="red" stroke-width="1" d="M465 552l3 203M368 552l-3 203"/>
+  <path stroke="blue" stroke-width="1" d="M333 552h35"/>
+  <path stroke="red" stroke-width="1" d="M368 552h41"/>
+  <path stroke="blue" stroke-width="1" d="M409 552h16"/>
+  <path stroke="red" stroke-width="1" d="M425 552h40"/>
+  <path stroke="blue" stroke-width="1" d="M465 552h35M402 755l16 29M431 755l-15 29"/>
+  <path stroke="red" stroke-width="1" d="M468 755l-7 29M365 755l8 29M333 755h32"/>
+  <path stroke="blue" stroke-width="1" d="M365 755h37"/>
+  <path stroke="red" stroke-width="1" d="M402 755h29"/>
+  <path stroke="blue" stroke-width="1" d="M431 755h37"/>
+  <path stroke="red" stroke-width="1" d="M468 755h32"/>
+  <path stroke="blue" stroke-width="1" d="M583 222l-54 95M583 222l55 95"/>
+  <path stroke="red" stroke-width="1" d="M628 222l25 95M539 222l-26 95"/>
+  <path stroke="blue" stroke-width="1" d="M529 317l-29 66M638 317l29 66"/>
+  <path stroke="red" stroke-width="1" d="M653 317l14 66M513 317l-13 66M500 317h13"/>
+  <path stroke="blue" stroke-width="1" d="M513 317h16"/>
+  <path stroke="red" stroke-width="1" d="M529 317h109"/>
+  <path stroke="blue" stroke-width="1" d="M638 317h15"/>
+  <path stroke="red" stroke-width="1" d="M653 317h14"/>
+  <path stroke="blue" stroke-width="1" d="M500 383l1 40M667 383l-2 40"/>
+  <path stroke="red" stroke-width="1" d="M667 383l-1 40M500 383l1 40"/>
+  <path stroke="blue" stroke-width="1" d="M500 383h167M501 423l74 129M665 423l-74 129"/>
+  <path stroke="red" stroke-width="1" d="M666 423l-34 129M501 423l34 129M500 423h1"/>
+  <path stroke="blue" stroke-width="1" d="M501 423h0"/>
+  <path stroke="red" stroke-width="1" d="M501 423h164"/>
+  <path stroke="blue" stroke-width="1" d="M665 423h1"/>
+  <path stroke="red" stroke-width="1" d="M666 423h1"/>
+  <path stroke="blue" stroke-width="1" d="M575 552l-6 203M591 552l7 203"/>
+  <path stroke="red" stroke-width="1" d="M632 552l3 203M535 552l-3 203"/>
+  <path stroke="blue" stroke-width="1" d="M500 552h35"/>
+  <path stroke="red" stroke-width="1" d="M535 552h40"/>
+  <path stroke="blue" stroke-width="1" d="M575 552h16"/>
+  <path stroke="red" stroke-width="1" d="M591 552h41"/>
+  <path stroke="blue" stroke-width="1" d="M632 552h35M569 755l15 29M598 755l-16 29"/>
+  <path stroke="red" stroke-width="1" d="M635 755l-7 29M532 755l7 29M500 755h32"/>
+  <path stroke="blue" stroke-width="1" d="M532 755h37"/>
+  <path stroke="red" stroke-width="1" d="M569 755h29"/>
+  <path stroke="blue" stroke-width="1" d="M598 755h37"/>
+  <path stroke="red" stroke-width="1" d="M635 755h32"/>
+  <path stroke="blue" stroke-width="1" d="M750 222l-55 95M750 222l55 95"/>
+  <path stroke="red" stroke-width="1" d="M795 222l25 95M705 222l-25 95"/>
+  <path stroke="blue" stroke-width="1" d="M695 317l-28 66M805 317l28 66"/>
+  <path stroke="red" stroke-width="1" d="M820 317l13 66M680 317l-13 66M667 317h13"/>
+  <path stroke="blue" stroke-width="1" d="M680 317h15"/>
+  <path stroke="red" stroke-width="1" d="M695 317h110"/>
+  <path stroke="blue" stroke-width="1" d="M805 317h15"/>
+  <path stroke="red" stroke-width="1" d="M820 317h13"/>
+  <path stroke="blue" stroke-width="1" d="M667 383l1 40M833 383l-1 40"/>
+  <path stroke="red" stroke-width="1" d="M833 383v40M667 383v40"/>
+  <path stroke="blue" stroke-width="1" d="M667 383h166M668 423l74 129M832 423l-74 129"/>
+  <path stroke="red" stroke-width="1" d="M833 423l-35 129M667 423l35 129M667 423h0"/>
+  <path stroke="blue" stroke-width="1" d="M667 423h1"/>
+  <path stroke="red" stroke-width="1" d="M668 423h164"/>
+  <path stroke="blue" stroke-width="1" d="M832 423h1"/>
+  <path stroke="red" stroke-width="1" d="M833 423h0"/>
+  <path stroke="blue" stroke-width="1" d="M742 552l-6 203M758 552l6 203"/>
+  <path stroke="red" stroke-width="1" d="M798 552l3 203M702 552l-3 203"/>
+  <path stroke="blue" stroke-width="1" d="M667 552h35"/>
+  <path stroke="red" stroke-width="1" d="M702 552h40"/>
+  <path stroke="blue" stroke-width="1" d="M742 552h16"/>
+  <path stroke="red" stroke-width="1" d="M758 552h40"/>
+  <path stroke="blue" stroke-width="1" d="M798 552h35M736 755l15 29M764 755l-15 29"/>
+  <path stroke="red" stroke-width="1" d="M801 755l-7 29M699 755l7 29M667 755h32"/>
+  <path stroke="blue" stroke-width="1" d="M699 755h37"/>
+  <path stroke="red" stroke-width="1" d="M736 755h28"/>
+  <path stroke="blue" stroke-width="1" d="M764 755h37"/>
+  <path stroke="red" stroke-width="1" d="M801 755h32"/>
+  <path stroke="blue" stroke-width="1" d="M917 222l-55 95M917 222l54 95"/>
+  <path stroke="red" stroke-width="1" d="M961 222l26 95M872 222l-25 95"/>
+  <path stroke="blue" stroke-width="1" d="M862 317l-29 66M971 317l29 66"/>
+  <path stroke="red" stroke-width="1" d="M987 317l13 66M847 317l-14 66M833 317h14"/>
+  <path stroke="blue" stroke-width="1" d="M847 317h15"/>
+  <path stroke="red" stroke-width="1" d="M862 317h109"/>
+  <path stroke="blue" stroke-width="1" d="M971 317h16"/>
+  <path stroke="red" stroke-width="1" d="M987 317h13"/>
+  <path stroke="blue" stroke-width="1" d="M833 383l2 40M1000 383l-1 40"/>
+  <path stroke="red" stroke-width="1" d="M1000 383l-1 40M833 383l1 40"/>
+  <path stroke="blue" stroke-width="1" d="M833 383h167M835 423l74 129M999 423l-74 129"/>
+  <path stroke="red" stroke-width="1" d="M999 423l-34 129M834 423l34 129M833 423h1"/>
+  <path stroke="blue" stroke-width="1" d="M834 423h1"/>
+  <path stroke="red" stroke-width="1" d="M835 423h164"/>
+  <path stroke="blue" stroke-width="1" d="M999 423h0"/>
+  <path stroke="red" stroke-width="1" d="M999 423h1"/>
+  <path stroke="blue" stroke-width="1" d="M909 552l-7 203M925 552l6 203"/>
+  <path stroke="red" stroke-width="1" d="M965 552l3 203M868 552l-3 203"/>
+  <path stroke="blue" stroke-width="1" d="M833 552h35"/>
+  <path stroke="red" stroke-width="1" d="M868 552h41"/>
+  <path stroke="blue" stroke-width="1" d="M909 552h16"/>
+  <path stroke="red" stroke-width="1" d="M925 552h40"/>
+  <path stroke="blue" stroke-width="1" d="M965 552h35M902 755l16 29M931 755l-15 29"/>
+  <path stroke="red" stroke-width="1" d="M968 755l-7 29M865 755l8 29M833 755h32"/>
+  <path stroke="blue" stroke-width="1" d="M865 755h37"/>
+  <path stroke="red" stroke-width="1" d="M902 755h29"/>
+  <path stroke="blue" stroke-width="1" d="M931 755h37"/>
+  <path stroke="red" stroke-width="1" d="M968 755h32"/>
+</svg>
