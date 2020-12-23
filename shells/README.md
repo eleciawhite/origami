@@ -47,9 +47,9 @@ Now for the middle bottom, also with ptb=1.0 so straight lines. With a ca=45, sa
 
 The middle top (dark one) has the same sa and ca (45, 15) but a ptb=.95 so some curving in the pattern. I like it better than the original (though you can no longer use a protractor to create the pattern and prescoring is required).
 
-Now for the left most ones (the steel blue and light blue). These have the same ca and sa (45, 15) but a ptb of 0.90, which is actually a lot of curve. Folding them was tough and you can see the paper isn’t happy (the white showing is stress on the paper.
+Now for the left most ones (the steel blue and light blue). These have the same ca and sa (45, 15) but a ptb of 0.90, which is actually a lot of curve. Folding them was tough and you can see the paper isn’t happy (the white showing is stress on the paper).
 
-<img src="pics/CurvedCreaseAmmoniteWIthParametersBacks.jpeg" alt="curved crease ammonite origami" width="200"/>
+[<img src="pics/CurvedCreaseAmmoniteWIthParametersBacks.jpeg" alt="curved crease ammonite origami" width="200"/>](pics/CurvedCreaseAmmoniteWIthParametersBacks.jpeg)
 
 You can really see the too-much curve differences on the back of the snails where the folds were really too stressed (left pair). The flat folds have a, well, flatness to the shells so I like my ptb=.95 the best still, at least for this central angle and spirality. That is the one committed as [snailShell.svg](snailShell.svg).
 
@@ -58,8 +58,10 @@ You can really see the too-much curve differences on the back of the snails wher
 
 Note, [Shell_t.svg](shell_t.svg) creates a generic shell-like object. This was an accidental find when it became clear that [the toroid bowl](../other/toroidbowl.svg) was not foldable. I cut it in half (the actual paper) and the two result made nice, somewhat generic shells.
 
-
 The nautilus was a more directed effort. After trying to fold the Chambered Nautilus in [Origami Sea Life](https://www.amazon.com/dp/B01LXN1AGC/) and getting stuck (again!) on step 21: the unholy crimping, I looked at the pattern and wondered if I could re-create it with curves. I got out some log-log paper and estimated some curves (ok, then I did it a few more times). I used to have the pattern here but the Fuse-based version is much better, this was difficult to fold and while the outer part of the fold looked ok but the paper curls under and the underside is pretty unsightly. These are the nautilus shells in the [paper aquarium image](pics/paperAquarium.jpeg).
+
+[<img src="pics/paperAquarium.jpeg" alt="paper aquarium" width="200"/>](pics/paperAquarium.jpeg)
+
 
 I came across "Paper Nautili: A Model for Three Dimensional Planispiral Growth" by Arle Lommel in [Origami4](https://www.amazon.com/Origami-4-AK-Peters-ebook/dp/B00UVB3ROY/) (it is in the kindle preview). The method described there is for finding the ratios of the spiral an growth. I made a [python script](lommel_halfshellgen.py) to recreate the pattern in the paper and be able to modify it. However, the paper creates a disappointingly flat spiral. However, I modified the script to use Bezier curves so I could try out different curve methods. Note that the goal here is to create a half-shell, open so you can see the septa (see above). 
 
