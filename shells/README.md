@@ -51,7 +51,7 @@ Now for the left most ones (the steel blue and light blue). These have the same 
 
 [<img src="pics/CurvedCreaseAmmoniteWIthParametersBacks.jpeg" alt="curved crease ammonite origami" width="200"/>](pics/CurvedCreaseAmmoniteWIthParametersBacks.jpeg)
 
-You can really see the too-much curve differences on the back of the snails where the folds were really too stressed (left pair). The flat folds have a, well, flatness to the shells so I like my ptb=.95 the best still, at least for this central angle and spirality. That is the one committed as [snailShell.svg](snailShell.svg).
+You can really see the too-much curve differences on the back of the snails where the folds were really too stressed (left pair). The flat folds have a, well, flatness to the shells so I like my ptb=0.95 the best still, at least for this central angle and spirality. That is the one committed as [snailShell.svg](snailShell.svg). A simpler one is [simpleSnailShell.svg](simpleSnailShell.svg) (ptb=0.95, ca 45, sa 15, N12), it works well with 6" chiyogami paper (and is easier in kami).
 
 
 # Backstory #

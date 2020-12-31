@@ -22,21 +22,24 @@
 # Mirror this on the other side of the centerline. 
 # Set u=u_prime and repeat N times.
 #
-# While the diagonak cuts the trapezoid into a right 
+# While the diagonal cuts the trapezoid into a right 
 # triangle and a scalene trianle, sadly, we know information 
 # for the scalene trianle but need information for the right 
 # triangle which means we need
 #
 # The Law of Cosines: Pythagorean theorem for non-right triangles
 # a*a = b*b + c*c - 2ac cos(angle_a)
-# The Law of Sines
+# The Law of Sines (this is far more useful for this)
 #   a/sin(angle_a) = b/sin(angle_b) = c/sin(angle_c)
-# Much algebra will be done. I will not show my work.
+# Much algebra will be done. I will not show my work because
+# I mostly used a website to get the equations
+# https://www.mathsisfun.com/algebra/trig-solving-triangles.html
+# And anothe website to check my work:
+# https://www.triangle-calculator.com/
 #
-# A straight line approach leads to flat origami. I'm
-# planning to modify 
-# the algorithm to use bezier curves to get 
-# a self-shaping curved nautilus.
+# A straight line approach leads to flat origami. I modified
+# the algorithm to use bezier curves to get a self-shaping 
+# curved shell.
 
 from math import *
 import matplotlib.pyplot as plt
@@ -107,19 +110,22 @@ def triangle_find_vertices_aas(angleA, angleC, sideAB):
     #print('AC len {} BC len {} AB len {} BC {} AC {}'.format(lengthAC, lengthBC, sideAB.length(), pointC.lengthTo(sideAB.pointB), pointC.lengthTo(sideAB.pointA)))
     return [sideAB.pointA, sideAB.pointB, pointC]
     
-def make_plot(ax, ca, sa, u, N, curve_fun):
+def make_plot(ax, ca, sa, u, N, curve_fun, distmult=1):
     angleC = 90.0 - ca/2.0 - sa
     angleA = sa
 
     pointA = point(0,0)
     pointB = pointA.pointFrom(u, 0)
     
-    sideTop = side(pointB, pointB.negative())
-    angleOpTop= 3.0*ca
-    angleIso = (180.0 - angleOpTop)/2.0
-    pointX, pointY, pointZ = triangle_find_vertices_aas(angleIso, -angleOpTop, sideTop)
-    # Small fat triangle on the top
-    outerPolyVertices = [pointX.pts(), pointZ.pts(), pointY.pts()]
+    sideAB = side(pointA, pointB)
+    pointA, pointB, pointC = triangle_find_vertices_aas(angleA, angleC, sideAB)
+    outerPolyVertices = [pointC.pts(), pointA.pts(), pointC.negative().pts()]
+    
+    lengthAC = pointA.lengthTo(pointC) 
+    lengthANewA = lengthAC * sin(radians(angleA))
+    
+    pointA = pointA.pointFrom(lengthANewA*distmult, 90)
+    pointB = pointC.pointFrom(lengthANewA*(distmult-1.0), 90)
     
     for i in range(N):
         sideAB = side(pointA, pointB)
@@ -129,30 +135,24 @@ def make_plot(ax, ca, sa, u, N, curve_fun):
             ptb=curve_fun(pointA, pointB))
         add_plot(ax, pointA, pointB.negative(), color='r', 
             ptb=curve_fun(pointA, pointB.negative()))
+            
         add_plot(ax, pointA, pointC, color='b', 
             ptb=curve_fun(pointA, pointC))
         add_plot(ax, pointA, pointC.negative(), color='b', 
             ptb=curve_fun(pointA, pointC.negative()))
-            
-        # for debugging:
-        #ptb_ab = curve_fun(pointA, pointB)
-        #ax.plot(ptb_ab.x, ptb_ab.y, 'rx')
-        #ptb_ac = curve_fun(pointA, pointC)
-        #ax.plot(ptb_ac.x, ptb_ac.y, 'bx')
             
         lengthAB = sideAB.length()
         lengthAC = pointA.lengthTo(pointC) 
         newLengthAB = lengthAC * sin(radians(90-angleA))
         lengthANewA = lengthAC * sin(radians(angleA))
 
-        pointA = pointA.pointFrom(lengthANewA, 90)
-        pointB = pointC
+        pointA = pointA.pointFrom(lengthANewA*distmult, 90)
+        pointB = pointC.pointFrom(lengthANewA*(distmult-1.0), 90)
 
-    # make outer triangle for cutting
+    # finish making outer triangle for cutting
     sideAB = side(pointA, pointB)
     pointA, pointB, pointC = triangle_find_vertices_aas(angleA, angleC, sideAB)
     outerPolyVertices.extend([pointC.negative().pts(), pointC.pts()])
-    #print(outerPolyVertices)
     
     poly = Polygon(outerPolyVertices, facecolor='1.0', edgecolor='k')
     ax.add_patch(poly)
@@ -162,60 +162,47 @@ def make_plot(ax, ca, sa, u, N, curve_fun):
 # use for straight line versions
 def ptb_pt1(pt1, pt2):
     return pt1
-    
-def ptb_sumxdiv195_avey(pt1, pt2):
-    xb = (pt1.x+pt2.x)/1.95
+
+# Use an x division less than two or the curves fight the angle of growth
+def ptb_sumxdiv0975_avey(pt1, pt2):
+    xb = (pt1.x+pt2.x)/(2.0*0.975)
     yb = (pt1.y+pt2.y)/2.0
     return point(xb, yb)
     
-def ptb_sumxdiv205_avey(pt1, pt2):
-    xb = (pt1.x+pt2.x)/2.05
+def ptb_sumxdiv095_avey(pt1, pt2):
+    xb = (pt1.x+pt2.x)/(2.0*0.95)
     yb = (pt1.y+pt2.y)/2.0
     return point(xb, yb)
     
-def ptb_sumxdiv210_avey(pt1, pt2):
-    xb = (pt1.x+pt2.x)/2.10
+def ptb_sumxdiv090_avey(pt1, pt2):
+    xb = (pt1.x+pt2.x)/(2.0*0.9)
     yb = (pt1.y+pt2.y)/2.0
     return point(xb, yb)
 
+# example values
 ca = 30.0 # central angle, book uses 30 to 45 degrees
 sa = 15.0 # spirality angle book uses 12 to 15 degrees
 u  = 1.0  # initial length
 N  = 20  # number of iterations
 
 show_plot = True
+
 figure, ax = plt.subplots()
-name = 'fusesgen_straight_ca30_sa15_N20'
-make_plot(ax, ca=30, sa=15, u=1, N=20, curve_fun=ptb_pt1)
+name = 'fg24_straight_ca30_sa12_N20'
+make_plot(ax, ca=30, sa=12, u=1, N=20, curve_fun=ptb_pt1)
 plt.savefig(name + ".svg")
 if show_plot: plt.title(name), plt.show()
 
 figure, ax = plt.subplots()
-name = 'fusesgen_straight_ca45_sa15_N15'
-make_plot(ax, ca=45, sa=15, u=1, N=15, curve_fun=ptb_pt1)
+name = 'fg28_bez0975_ca30_sa10_N20'
+make_plot(ax, ca=30, sa=10, u=1, N=20, curve_fun=ptb_sumxdiv0975_avey)
 plt.savefig(name + ".svg")
 if show_plot: plt.title(name), plt.show()
 
 figure, ax = plt.subplots()
-name = 'fusesgen_straight_ca45_sa12_N20'
-make_plot(ax, ca=45, sa=12, u=1, N=20, curve_fun=ptb_pt1)
+name = 'fg28_bez095_ca45_sa15_N12_dist2'
+make_plot(ax, ca=30, sa=15, u=1, N=12, curve_fun=ptb_sumxdiv095_avey, distmult=2)
 plt.savefig(name + ".svg")
 if show_plot: plt.title(name), plt.show()
 
-figure, ax = plt.subplots()
-name = 'fusesgen_bez195_ca30_sa15_N20'
-make_plot(ax, ca=30, sa=15, u=1, N=20, curve_fun=ptb_sumxdiv195_avey)
-plt.savefig(name + ".svg")
-if show_plot: plt.title(name), plt.show()
-
-figure, ax = plt.subplots()
-name = 'fusesgen_bez210_ca45_sa15_N15'
-make_plot(ax, ca=45, sa=15, u=1, N=15, curve_fun=ptb_sumxdiv210_avey)
-plt.savefig(name + ".svg")
-if show_plot: plt.title(name), plt.show()
-
-figure, ax = plt.subplots()
-name = 'fusesgen_bez205_ca45_sa12_N20'
-make_plot(ax, ca=45, sa=12, u=1, N=20, curve_fun=ptb_sumxdiv205_avey)
-plt.savefig(name + ".svg")
-if show_plot: plt.title(name), plt.show()
+print(".")
