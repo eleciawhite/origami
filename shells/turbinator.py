@@ -1,21 +1,23 @@
-# Generate a turbinated shell (which is to say conical, not in a plane like
-# a planispiral shell). The Fuse method can be formed to be conical but you 
-# working against the paper. The goal here is for a natural 3d spiral, going 
-# all the way to scalariform (whorls not touching each other).
+# Generate a turbinated shell (which is to say conical, not in a plane # like a planispiral shell). The Fuse method can be formed to be 
+# conical but you working against the paper. The goal here is for a 
+# natural 3d spiral, going all the way to scalariform (whorls not 
+# touching each other).
 
-# The geometery from this came from experimenting with random right triangle scraps.
-# I found that I could fold along the center line of the paper, then fold across
-# normal to the long edge of the right triangle (valleys). Then fold mountains 
-# generally to Fuse's method: from where the normal line crosses the midline
-# to where the normal line meets the edge of the paper. 
+# The geometery from this came from experimenting with random right 
+# triangle scraps. I found that I could fold along the center line of 
+# the paper, then fold across normal to the long edge of the right 
+# triangle (valleys). Then fold mountains generally to Fuse's method:
+# from where the normal line crosses the midline to where the normal 
+# line meets the edge of the paper. 
 # 
-# Depending on the distance between the normal lines and the shape of the scrap,
-# the result is a conical spiral with raw edges only at the large end.
+# Depending on the distance between the normal lines and the shape of 
+# the scrap, the result is a conical spiral with raw edges only at the 
+# large end.
 # 
-# The geomtry for figuring out the lines was tough, mostly careful, repeated use of 
-# the Law of Sines as well as other triangle rules. The terminology I'm using
-# for the code depends heavily on the diagram. Look in the pics directory
-# for a relevant diagram.
+# The geomtry for figuring out the lines was tough, mostly careful, 
+# repeated use of the Law of Sines as well as other triangle rules. The 
+# terminology I'm using for the code depends heavily on the diagram. 
+# Look in the pics directory for a relevant diagram.
 #
 # The parameters are:
 # ca - central angle (the one with the midline through it)
@@ -111,10 +113,12 @@ def make_plot(ax, ca, sa, u=1.0, N=15, curve_fun=ptb_straightline, ratio=0.5):
     caL = ca*(1-ratio)
     normal_length = u
 
-    import pdb; pdb.set_trace()
-
-    pointA = point((1-ratio)*normal_length, A_BL)
-
+    pointD = point((1-ratio)*normal_length, A_BL)
+    
+    add_plot(ax, pointA, pointD, color='g', 
+            ptb=curve_fun(pointA, pointD))
+            
+    pointA = pointD
 
     for i in range(N):
         
@@ -134,10 +138,6 @@ def make_plot(ax, ca, sa, u=1.0, N=15, curve_fun=ptb_straightline, ratio=0.5):
         add_plot(ax, pointA, pointBL, color='m', 
             ptb=curve_fun(pointA, pointBL))
 
-
-        add_plot(ax, pointA, pointD, color='g', 
-            ptb=curve_fun(pointA, pointD))
-
         add_plot(ax, pointA, pointCL, color='b', 
             ptb=curve_fun(pointA, pointCL))
         add_plot(ax, pointA, pointCR, color='c', 
@@ -147,9 +147,7 @@ def make_plot(ax, ca, sa, u=1.0, N=15, curve_fun=ptb_straightline, ratio=0.5):
         pointBL = pointCL
         pointBR = pointCR
         pointA = pointD
-        print(normal_length)
         normal_length = pointBL.lengthTo(pointBR)
-        print(normal_length)
 
     # finish making outer triangle for cutting
     outerPolyVertices.extend([pointBL.pts(), pointBR.pts()]) 
@@ -159,11 +157,11 @@ def make_plot(ax, ca, sa, u=1.0, N=15, curve_fun=ptb_straightline, ratio=0.5):
     ax.set_aspect(1), ax.autoscale()
 
 
- 
 show_plot = True
 
+
 figure, ax = plt.subplots()
-name = 'turb1'
-make_plot(ax, ca=40, sa=25, u=1.0, N=10, curve_fun=ptb_straightline, ratio=0.5)
+name = 'tb2c_ca30_sa10_N20'
+make_plot(ax, ca=30, sa=10, u=1.0, N=20, curve_fun=ptb_straightline)
 plt.savefig(name + ".svg")
 if show_plot: plt.title(name), plt.show()
