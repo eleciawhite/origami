@@ -1,4 +1,4 @@
-# Generate a nautilus shell from triangles
+# Generate a snail (ammonite) shell from triangles
 # This method is based in the one decribed in Spirals 
 # by Tomoko Fuse for Ammonites.
 
@@ -160,7 +160,7 @@ def make_plot(ax, ca, sa, u, N, curve_fun, distmult=1):
     ax.set_aspect(1), ax.autoscale()
         
 # use for straight line versions
-def ptb_pt1(pt1, pt2):
+def ptb_straightline(pt1, pt2):
     return pt1
 
 # Use an x division less than two or the curves fight the angle of growth
@@ -189,7 +189,7 @@ show_plot = True
 
 figure, ax = plt.subplots()
 name = 'fg24_straight_ca30_sa12_N20'
-make_plot(ax, ca=30, sa=12, u=1, N=20, curve_fun=ptb_pt1)
+make_plot(ax, ca=30, sa=12, u=1, N=20, curve_fun=ptb_straightline)
 plt.savefig(name + ".svg")
 if show_plot: plt.title(name), plt.show()
 
