@@ -1,30 +1,27 @@
-# Generate a turbinated shell (which is to say conical, not in a plane # like a planispiral shell). The Fuse method can be formed to be 
+# Generate a turbinated shell (which is to say conical, not in a plane 
+# like a planispiral shell). The Fuse method can be formed to be 
 # conical but you working against the paper. The goal here is for a 
 # natural 3d spiral, going all the way to scalariform (whorls not 
-# touching each other).
-
-# The geometery from this came from experimenting with random right 
-# triangle scraps. I found that I could fold along the center line of 
-# the paper, then fold across normal to the long edge of the right 
-# triangle (valleys). Then fold mountains generally to Fuse's method:
-# from where the normal line crosses the midline to where the normal 
-# line meets the edge of the paper. 
-# 
-# Depending on the distance between the normal lines and the shape of 
-# the scrap, the result is a conical spiral with raw edges only at the 
-# large end.
+# touching each other). And of course, curved folds so the paper 
+# creates a life-like shell.
+#
+# Similar to the fuse_shellgen, the parameters are:
+# ca - central angle (the one with the midline through it)
+# u = inital length of the normal
+# N - number of iterations
+# However, the spiraling angle is split into two
+# saL - spiraling angle on the left
+# saR - spiraling angle on the right
+#
+# Since the interior line lengths will be the same, the edges of 
+# the paper will be different length. Instead of isosocele triangles,
+# this method will make for unbalanced triangles. 
 # 
 # The geomtry for figuring out the lines was tough, mostly careful, 
 # repeated use of the Law of Sines as well as other triangle rules. The 
 # terminology I'm using for the code depends heavily on the diagram. 
 # Look in the pics directory for a relevant diagram.
 #
-# The parameters are:
-# ca - central angle (the one with the midline through it)
-# sa - spiraling angle 
-# u = inital length of the normal
-# N - number of iterations
-# ratio - ca doesn't need to be perfectly bisected, this is how much is on the left:right (default:0.5)
 
 from math import *
 import matplotlib.pyplot as plt
@@ -91,37 +88,56 @@ def law_sines(length, ang_denom, ang_mult):
 def ptb_straightline(pt1, pt2):
     return pt1
 
-def make_plot(ax, ca, sa, u=1.0, N=15, curve_fun=ptb_straightline, ratio=0.5, addAngle=0.0):
+def make_plot(ax, ca, saL, saR, u=1.0, N=15, curve_fun=ptb_straightline, ratio=0.5, addAngle=0.0):
 
-    pointA = point(0,0)
-    A_BL = law_sines(u, ca, 90-ca)
-    pointBL = point(0, A_BL)
-    pointBR = point(u, A_BL)
-    outerPolyVertices = [pointBR.pts(), pointA.pts(), pointBL.pts()]
-    caL = ca*(1-ratio)
-    normal_length = u
+    # angles
+    angBx = 90 + (ca/2.0)
+    aveSa = (saL + saR) / 2.0
+    angCL = 180 - angBx - saL
+    angCR = 180 - angBx - saR
+    angDL = 90 + aveSa - saL
+    angDR = 90 + aveSa - saR
 
-    pointD = point((1-ratio)*normal_length, A_BL)
-    
-    add_plot(ax, pointA, pointD, color='g', 
+    # initial protoconch triangle
+    saRatio = saR/aveSa
+    A_BR = u * saRatio
+    A_BL = u * (1-saRatio)
+    pointA0 = point(0,0)
+    A0_A = law_sines(A_BR, ca*saRatio, 180-angBx)
+    pointA = pointA0.pointFrom(A0_A, 90 - angDR)
+
+    pointBR = pointA.pointFrom(A_BR, 90)
+    pointBL = pointA.pointFrom(A_BL, -90)
+
+    outerPolyVertices = [pointBR.pts(), pointA0.pts(), pointBL.pts()]
+    add_plot(ax, pointA0, pointA, color='c', 
             curve_fun=curve_fun)
-            
-    pointA = pointD
+
+    print(angDR, angDL, saRatio)
+    print(pointA0.pts(), pointA.pts(), pointBR.pts(), pointBL.pts())
 
     for i in range(N):
-        sa += addAngle
-        
-        A_BL = pointA.lengthTo(pointBL)
-        BL_CL = law_sines(A_BL, 90-sa, sa)
-        pointCL = pointBL.pointFrom(BL_CL, 0)
+        saL += addAngle
+        saR += addAngle
 
-        A_CL = law_sines(A_BL, 90-sa, 90)
-        CL_D = law_sines(A_CL, 90-caL, 90+caL-sa)
+        aveSa = (saL + saR) / 2.0
+        angCL = 180 - angBx - saL
+        angCR = 180 - angBx - saR
+        angDL = 90 + aveSa - saL
+        angDR = 90 + aveSa - saR
 
-        pointD = pointCL.pointFrom(CL_D, 90)
-        pointCR = pointD.pointFrom(ratio*CL_D/(1-ratio), 90)
+        A_CR = law_sines(A_BR, angCR, angBx)
+        pointCR = pointA.pointFrom(A_CR, 90-saR)
 
-        # normal line
+        A_CL = law_sines(A_BL, angCL, angBx)
+        pointCL = pointA.pointFrom(A_CL, -90+saL)
+
+        A_D = law_sines(A_CL, angDL, saL)
+        pointD = pointA.pointFrom(A_D, 90- angDR)
+
+        print("lengths should all be the same")
+        print(pointA.lengthTo(pointD), A_D, law_sines(A_CL, angDL, saL), law_sines(A_CR, angDR, saR))
+
         add_plot(ax, pointA, pointBR, color='r', 
             curve_fun=curve_fun)
         add_plot(ax, pointA, pointBL, color='m', 
@@ -131,29 +147,34 @@ def make_plot(ax, ca, sa, u=1.0, N=15, curve_fun=ptb_straightline, ratio=0.5, ad
             curve_fun=curve_fun)
         add_plot(ax, pointA, pointCR, color='c', 
             curve_fun=curve_fun)
+        
+        add_plot(ax, pointA, pointD, color='g', 
+            curve_fun=curve_fun)
 
-    
         pointBL = pointCL
         pointBR = pointCR
         pointA = pointD
-        normal_length = pointBL.lengthTo(pointBR)
+        A_BR = pointA.lengthTo(pointBR)
+        A_BL = pointA.lengthTo(pointBL)
     
     # finish making outer triangle for cutting
-    A_BL = pointA.lengthTo(pointBL)
-    BL_CL = law_sines(A_BL, 90-sa, sa)
-    pointCL = pointBL.pointFrom(BL_CL, 0)
-    A_CL = law_sines(A_BL, 90-sa, 90)
-    CL_D = law_sines(A_CL, 90-caL, 90+caL-sa)
+    saL += addAngle
+    saR += addAngle
 
-    pointD = pointCL.pointFrom(CL_D, 90)
-    pointCR = pointD.pointFrom(ratio*CL_D/(1-ratio), 90)
-    
+    angCL = 180 - angBx - saL
+    angCR = 180 - angBx - saR
+
+    A_CR = law_sines(A_BR, angCR, angBx)
+    pointCR = pointA.pointFrom(A_CR, 90-saR)
+
+    A_CL = law_sines(A_BL, angCL, angBx)
+    pointCL = pointA.pointFrom(A_CL, -90+saL)
+
     outerPolyVertices.extend([pointCL.pts(), pointCR.pts()]) 
     poly = Polygon(outerPolyVertices, facecolor='1.0', edgecolor='k')
     ax.add_patch(poly)
     plt.axis('off')
     ax.set_aspect(1), ax.autoscale()
-
 
 # Use an x division less than two or the curves fight the angle of growth
 def ptb_sumxdiv0975_avey(pt1, pt2):
@@ -163,28 +184,8 @@ def ptb_sumxdiv0975_avey(pt1, pt2):
 
 show_plot = True
 
-
 figure, ax = plt.subplots()
-name = 'tb3_ca30_sa35_N20_min050'
-make_plot(ax, ca=30, sa=35, u=1.0, N=20, curve_fun=ptb_straightline, addAngle=-0.5)
-plt.savefig(name + ".svg")
-if show_plot: plt.title(name), plt.show()
-
-figure, ax = plt.subplots()
-name = 'tb3_ca30_sa40_N25_min125'
-make_plot(ax, ca=30, sa=40, u=1.0, N=25, curve_fun=ptb_straightline, addAngle=-1.25)
-plt.savefig(name + ".svg")
-if show_plot: plt.title(name), plt.show()
-
-
-figure, ax = plt.subplots()
-name = 'tb3_ca45_sa40_N20_min15'
-make_plot(ax, ca=45, sa=40, u=1.0, N=20, curve_fun=ptb_straightline, addAngle=-1.5)
-plt.savefig(name + ".svg")
-if show_plot: plt.title(name), plt.show()
-
-figure, ax = plt.subplots()
-name = 'tb3_ca45_sa45_N15_min2'
-make_plot(ax, ca=45, sa=45, u=1.0, N=15, curve_fun=ptb_straightline, addAngle=-2)
+name = 'tb9_ca30_sar15_sal30_N15'
+make_plot(ax, ca=30, saR=15, saL=30, u=1.0, N=15, curve_fun=ptb_straightline, addAngle=0)
 plt.savefig(name + ".svg")
 if show_plot: plt.title(name), plt.show()
