@@ -63,8 +63,8 @@ class side:
     def length(self):
         return self.pointA.lengthTo(self.pointB)
 
-
-def add_plot(ax, pt1, pt2, ptb, color):
+def add_plot(ax, pt1, pt2, curve_fun, color):
+    ptb = curve_fun(pt1, pt2)
     bezier(ax, pt1, pt2, ptb, color)
 
     
@@ -83,18 +83,6 @@ def bezier(ax, pt1, pt2, ptb, color):
 
     ax.plot(x, y, color)
 
-# We are given two angles of a triangle and one side, which is not the side adjacent to the two given angles. Return all three point coordinates.
-# https://www.mathsisfun.com/algebra/trig-solving-triangles.html
-# https://www.triangle-calculator.com/
-def triangle_find_vertices_aas(angleA, angleC, sideAB):
-    lengthBC= sideAB.length()*sin(radians(angleA))/sin(radians(angleC))
-    angleB = 180 - abs(angleA) - abs(angleC)
-    #print(angleA, angleB, angleC)
-    lengthAC = sideAB.length()*sin(radians(angleB))/sin(radians(angleC))
-    pointC = sideAB.pointA.pointFrom(lengthAC, angleA)
-    #print('AC len {} BC len {} AB len {} BC {} AC {}'.format(lengthAC, lengthBC, sideAB.length(), pointC.lengthTo(sideAB.pointB), pointC.lengthTo(sideAB.pointA)))
-    return [sideAB.pointA, sideAB.pointB, pointC]
-
 def law_sines(length, ang_denom, ang_mult):
     val = length*sin(radians(ang_mult)) / sin(radians(ang_denom))
     return abs(val)
@@ -103,7 +91,7 @@ def law_sines(length, ang_denom, ang_mult):
 def ptb_straightline(pt1, pt2):
     return pt1
 
-def make_plot(ax, ca, sa, u=1.0, N=15, curve_fun=ptb_straightline, ratio=0.5):
+def make_plot(ax, ca, sa, u=1.0, N=15, curve_fun=ptb_straightline, ratio=0.5, addAngle=0.0):
 
     pointA = point(0,0)
     A_BL = law_sines(u, ca, 90-ca)
@@ -116,11 +104,12 @@ def make_plot(ax, ca, sa, u=1.0, N=15, curve_fun=ptb_straightline, ratio=0.5):
     pointD = point((1-ratio)*normal_length, A_BL)
     
     add_plot(ax, pointA, pointD, color='g', 
-            ptb=curve_fun(pointA, pointD))
+            curve_fun=curve_fun)
             
     pointA = pointD
 
     for i in range(N):
+        sa += addAngle
         
         A_BL = pointA.lengthTo(pointBL)
         BL_CL = law_sines(A_BL, 90-sa, sa)
@@ -134,34 +123,68 @@ def make_plot(ax, ca, sa, u=1.0, N=15, curve_fun=ptb_straightline, ratio=0.5):
 
         # normal line
         add_plot(ax, pointA, pointBR, color='r', 
-            ptb=curve_fun(pointA, pointBR))
+            curve_fun=curve_fun)
         add_plot(ax, pointA, pointBL, color='m', 
-            ptb=curve_fun(pointA, pointBL))
+            curve_fun=curve_fun)
 
         add_plot(ax, pointA, pointCL, color='b', 
-            ptb=curve_fun(pointA, pointCL))
+            curve_fun=curve_fun)
         add_plot(ax, pointA, pointCR, color='c', 
-            ptb=curve_fun(pointA, pointCR))
+            curve_fun=curve_fun)
 
     
         pointBL = pointCL
         pointBR = pointCR
         pointA = pointD
         normal_length = pointBL.lengthTo(pointBR)
-
+    
     # finish making outer triangle for cutting
-    outerPolyVertices.extend([pointBL.pts(), pointBR.pts()]) 
+    A_BL = pointA.lengthTo(pointBL)
+    BL_CL = law_sines(A_BL, 90-sa, sa)
+    pointCL = pointBL.pointFrom(BL_CL, 0)
+    A_CL = law_sines(A_BL, 90-sa, 90)
+    CL_D = law_sines(A_CL, 90-caL, 90+caL-sa)
+
+    pointD = pointCL.pointFrom(CL_D, 90)
+    pointCR = pointD.pointFrom(ratio*CL_D/(1-ratio), 90)
+    
+    outerPolyVertices.extend([pointCL.pts(), pointCR.pts()]) 
     poly = Polygon(outerPolyVertices, facecolor='1.0', edgecolor='k')
     ax.add_patch(poly)
     plt.axis('off')
     ax.set_aspect(1), ax.autoscale()
 
 
+# Use an x division less than two or the curves fight the angle of growth
+def ptb_sumxdiv0975_avey(pt1, pt2):
+    xb = (pt1.x+pt2.x)/(2.0*0.975)
+    yb = (pt1.y+pt2.y)/2.0
+    return point(xb, yb)
+
 show_plot = True
 
 
 figure, ax = plt.subplots()
-name = 'tb2c_ca30_sa10_N20'
-make_plot(ax, ca=30, sa=10, u=1.0, N=20, curve_fun=ptb_straightline)
+name = 'tb3_ca30_sa35_N20_min050'
+make_plot(ax, ca=30, sa=35, u=1.0, N=20, curve_fun=ptb_straightline, addAngle=-0.5)
+plt.savefig(name + ".svg")
+if show_plot: plt.title(name), plt.show()
+
+figure, ax = plt.subplots()
+name = 'tb3_ca30_sa40_N25_min125'
+make_plot(ax, ca=30, sa=40, u=1.0, N=25, curve_fun=ptb_straightline, addAngle=-1.25)
+plt.savefig(name + ".svg")
+if show_plot: plt.title(name), plt.show()
+
+
+figure, ax = plt.subplots()
+name = 'tb3_ca45_sa40_N20_min15'
+make_plot(ax, ca=45, sa=40, u=1.0, N=20, curve_fun=ptb_straightline, addAngle=-1.5)
+plt.savefig(name + ".svg")
+if show_plot: plt.title(name), plt.show()
+
+figure, ax = plt.subplots()
+name = 'tb3_ca45_sa45_N15_min2'
+make_plot(ax, ca=45, sa=45, u=1.0, N=15, curve_fun=ptb_straightline, addAngle=-2)
 plt.savefig(name + ".svg")
 if show_plot: plt.title(name), plt.show()
