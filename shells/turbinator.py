@@ -88,22 +88,26 @@ def law_sines(length, ang_denom, ang_mult):
 def ptb_straightline(pt1, pt2):
     return pt1
 
-def make_plot(ax, ca, saL, saR, u=1.0, N=15, curve_fun=ptb_straightline, ratio=0.5, addAngle=0.0):
+def make_plot(ax, caR=30.0, caL=30.0, saL=12.0, saR=15.0, u=1.0, N=15, curve_fun=ptb_straightline, ratio=0.5, addAngle=0.0):
 
     # angles
-    angBx = 90 + (ca/2.0)
+    angBR = 90 + (caR)
+    angBL = 90 + (caL)
     aveSa = (saL + saR) / 2.0
-    angCL = 180 - angBx - saL
-    angCR = 180 - angBx - saR
-    angDL = 90 + aveSa - saL
-    angDR = 90 + aveSa - saR
+    angCL = 180 - angBL - saL
+    angCR = 180 - angBR - saR
+    angDL = 90
+    angDR = 90 
 
     # initial protoconch triangle
-    saRatio = saR/aveSa
+    saRatio = saR/(saL+saR)
     A_BR = u * saRatio
-    A_BL = u * (1-saRatio)
+    A_BL = u * (1.0-saRatio)
     pointA0 = point(0,0)
-    A0_A = law_sines(A_BR, ca*saRatio, 180-angBx)
+    
+    caR = 180 - angDR -(180-angBR)
+    
+    A0_A = law_sines(A_BR, caR, 180-angBR)
     pointA = pointA0.pointFrom(A0_A, 90 - angDR)
 
     pointBR = pointA.pointFrom(A_BR, 90)
@@ -113,30 +117,27 @@ def make_plot(ax, ca, saL, saR, u=1.0, N=15, curve_fun=ptb_straightline, ratio=0
     add_plot(ax, pointA0, pointA, color='c', 
             curve_fun=curve_fun)
 
-    print(angDR, angDL, saRatio)
-    print(pointA0.pts(), pointA.pts(), pointBR.pts(), pointBL.pts())
-
     for i in range(N):
         saL += addAngle
         saR += addAngle
 
         aveSa = (saL + saR) / 2.0
-        angCL = 180 - angBx - saL
-        angCR = 180 - angBx - saR
+        angCL = 180 - angBL - saL
+        angCR = 180 - angBR - saR
         angDL = 90 + aveSa - saL
         angDR = 90 + aveSa - saR
 
-        A_CR = law_sines(A_BR, angCR, angBx)
+        A_CR = law_sines(A_BR, angCR, angBR)
         pointCR = pointA.pointFrom(A_CR, 90-saR)
 
-        A_CL = law_sines(A_BL, angCL, angBx)
+        A_CL = law_sines(A_BL, angCL, angBL)
         pointCL = pointA.pointFrom(A_CL, -90+saL)
 
         A_D = law_sines(A_CL, angDL, saL)
         pointD = pointA.pointFrom(A_D, 90- angDR)
 
-        print("lengths should all be the same")
-        print(pointA.lengthTo(pointD), A_D, law_sines(A_CL, angDL, saL), law_sines(A_CR, angDR, saR))
+#        print("lengths should all be the same")
+#        print(pointA.lengthTo(pointD), A_D, law_sines(A_CL, angDL, saL), law_sines(A_CR, angDR, saR))
 
         add_plot(ax, pointA, pointBR, color='r', 
             curve_fun=curve_fun)
@@ -161,13 +162,13 @@ def make_plot(ax, ca, saL, saR, u=1.0, N=15, curve_fun=ptb_straightline, ratio=0
     saL += addAngle
     saR += addAngle
 
-    angCL = 180 - angBx - saL
-    angCR = 180 - angBx - saR
+    angCL = 180 - angBL - saL
+    angCR = 180 - angBR - saR
 
-    A_CR = law_sines(A_BR, angCR, angBx)
+    A_CR = law_sines(A_BR, angCR, angBR)
     pointCR = pointA.pointFrom(A_CR, 90-saR)
 
-    A_CL = law_sines(A_BL, angCL, angBx)
+    A_CL = law_sines(A_BL, angCL, angBL)
     pointCL = pointA.pointFrom(A_CL, -90+saL)
 
     outerPolyVertices.extend([pointCL.pts(), pointCR.pts()]) 
@@ -183,9 +184,25 @@ def ptb_sumxdiv0975_avey(pt1, pt2):
     return point(xb, yb)
 
 show_plot = True
-
+import pdb; pdb.set_trace()
 figure, ax = plt.subplots()
-name = 'tb9_ca30_sar15_sal30_N15'
-make_plot(ax, ca=30, saR=15, saL=30, u=1.0, N=15, curve_fun=ptb_straightline, addAngle=0)
+name = 'tb9_ca30_sar12_sal12_N15'
+make_plot(ax, saR=12.0, saL=12.0, u=1.0, N=15, curve_fun=ptb_straightline, addAngle=0)
 plt.savefig(name + ".svg")
 if show_plot: plt.title(name), plt.show()
+
+figure, ax = plt.subplots()
+name = 'tb9_ca30_sar15_sal30_N5'
+make_plot(ax, saR=15.0, saL=30.0, u=1.0, N=5, curve_fun=ptb_straightline, addAngle=0)
+plt.savefig(name + ".svg")
+if show_plot: plt.title(name), plt.show()
+
+figure, ax = plt.subplots()
+name = 'tb9_ca45_sr15_sal30_N15'
+make_plot(ax, caL=0.0, saR=15.0, saL=15.0, u=1.0, N=10, curve_fun=ptb_straightline, addAngle=0)
+plt.savefig(name + ".svg")
+if show_plot: plt.title(name), plt.show()
+
+
+
+
