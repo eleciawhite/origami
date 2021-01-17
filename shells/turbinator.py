@@ -88,7 +88,10 @@ def law_sines(length, ang_denom, ang_mult):
 def ptb_straightline(pt1, pt2):
     return pt1
 
-def make_plot(ax, caR=30.0, caL=30.0, saL=12.0, saR=15.0, u=1.0, N=15, curve_fun=ptb_straightline, ratio=0.5, addAngle=0.0):
+def make_plot(prefix='tb', caR=30.0, caL=30.0, saL=12.0, saR=15.0, u=1.0, N=15, curve_fun=ptb_straightline, ratio=0.5, addAngle=0.0):
+    
+    figure, ax = plt.subplots()
+    name = '{}_car{}_cal{}_sal{}_sar{}_N{}_add{}'.format(prefix, int(caL), int(caR), int(saL), int(saR), N, int(10*addAngle))
 
     # angles
     angBR = 90 + (caR)
@@ -96,48 +99,51 @@ def make_plot(ax, caR=30.0, caL=30.0, saL=12.0, saR=15.0, u=1.0, N=15, curve_fun
     aveSa = (saL + saR) / 2.0
     angCL = 180 - angBL - saL
     angCR = 180 - angBR - saR
-    angDL = 90
-    angDR = 90 
 
     # initial protoconch triangle
-    saRatio = saR/(saL+saR)
-    A_BR = u * saRatio
-    A_BL = u * (1.0-saRatio)
     pointA0 = point(0,0)
+    A0_BL = law_sines(u, caL + caR, 90-caR)
+    A0_BR = law_sines(u, caL + caR, 90-caL)
+    pointBR = pointA0.pointFrom(A0_BR, caR)
+    pointBL = pointA0.pointFrom(A0_BL, -caL)
     
-    caR = 180 - angDR -(180-angBR)
-    
-    A0_A = law_sines(A_BR, caR, 180-angBR)
-    pointA = pointA0.pointFrom(A0_A, 90 - angDR)
+    saRatio = saL/(saL+saR)
+    A_BR = u * saRatio
+    A_BL = u * (1.0 - saRatio)
+    pointA = pointBR.pointFrom(A_BR, -90)
 
-    pointBR = pointA.pointFrom(A_BR, 90)
-    pointBL = pointA.pointFrom(A_BL, -90)
+    A0_A = pointA0.lengthTo(pointA)
+    sinncar=sin(radians(90-caR))
+    angA0R = degrees(asin(A_BR*sinncar/A0_A))
+    angDR = 180.0 - (90.0-caR) - angA0R
+    
+    sinncal=sin(radians(90-caL))
+    angA0L = degrees(asin(A_BL*sinncal/A0_A))
+    angDL = 180.0 - (90.0-caL) - angA0L
 
     outerPolyVertices = [pointBR.pts(), pointA0.pts(), pointBL.pts()]
-    add_plot(ax, pointA0, pointA, color='c', 
+    add_plot(ax, pointA0, pointA, color='g', 
             curve_fun=curve_fun)
 
     for i in range(N):
         saL += addAngle
         saR += addAngle
 
-        aveSa = (saL + saR) / 2.0
         angCL = 180 - angBL - saL
         angCR = 180 - angBR - saR
-        angDL = 90 + aveSa - saL
-        angDR = 90 + aveSa - saR
 
         A_CR = law_sines(A_BR, angCR, angBR)
         pointCR = pointA.pointFrom(A_CR, 90-saR)
 
         A_CL = law_sines(A_BL, angCL, angBL)
-        pointCL = pointA.pointFrom(A_CL, -90+saL)
+        pointCL = pointA.pointFrom(A_CL, -(90-saL))
+        
+        D_CR = pointCR.lengthTo(pointCL)*saRatio
+        pointD = pointCR.pointFrom(D_CR, -90)
+        
 
-        A_D = law_sines(A_CL, angDL, saL)
-        pointD = pointA.pointFrom(A_D, 90- angDR)
-
-#        print("lengths should all be the same")
-#        print(pointA.lengthTo(pointD), A_D, law_sines(A_CL, angDL, saL), law_sines(A_CR, angDR, saR))
+        print("lengths should all be the same")
+        print(pointA.lengthTo(pointD), law_sines(A_CL, angDL, saL), law_sines(A_CR, angDR, saR))
 
         add_plot(ax, pointA, pointBR, color='r', 
             curve_fun=curve_fun)
@@ -169,13 +175,15 @@ def make_plot(ax, caR=30.0, caL=30.0, saL=12.0, saR=15.0, u=1.0, N=15, curve_fun
     pointCR = pointA.pointFrom(A_CR, 90-saR)
 
     A_CL = law_sines(A_BL, angCL, angBL)
-    pointCL = pointA.pointFrom(A_CL, -90+saL)
+    pointCL = pointA.pointFrom(A_CL, -(90-saL))
 
     outerPolyVertices.extend([pointCL.pts(), pointCR.pts()]) 
     poly = Polygon(outerPolyVertices, facecolor='1.0', edgecolor='k')
     ax.add_patch(poly)
     plt.axis('off')
     ax.set_aspect(1), ax.autoscale()
+    plt.savefig(name + ".svg")
+    if show_plot: plt.title(name), plt.show()
 
 # Use an x division less than two or the curves fight the angle of growth
 def ptb_sumxdiv0975_avey(pt1, pt2):
@@ -184,24 +192,16 @@ def ptb_sumxdiv0975_avey(pt1, pt2):
     return point(xb, yb)
 
 show_plot = True
-import pdb; pdb.set_trace()
-figure, ax = plt.subplots()
-name = 'tb9_ca30_sar12_sal12_N15'
-make_plot(ax, saR=12.0, saL=12.0, u=1.0, N=15, curve_fun=ptb_straightline, addAngle=0)
-plt.savefig(name + ".svg")
-if show_plot: plt.title(name), plt.show()
 
-figure, ax = plt.subplots()
-name = 'tb9_ca30_sar15_sal30_N5'
-make_plot(ax, saR=15.0, saL=30.0, u=1.0, N=5, curve_fun=ptb_straightline, addAngle=0)
-plt.savefig(name + ".svg")
-if show_plot: plt.title(name), plt.show()
 
-figure, ax = plt.subplots()
-name = 'tb9_ca45_sr15_sal30_N15'
-make_plot(ax, caL=0.0, saR=15.0, saL=15.0, u=1.0, N=10, curve_fun=ptb_straightline, addAngle=0)
-plt.savefig(name + ".svg")
-if show_plot: plt.title(name), plt.show()
+#import pdb; pdb.set_trace()
+make_plot(prefix='t5', saR=12.0, saL=12.0, u=1.0, N=3, curve_fun=ptb_straightline, addAngle=0)
+
+
+make_plot(prefix='t5', saR=15.0, saL=30.0, u=1.0, N=4, curve_fun=ptb_straightline, addAngle=0)
+
+
+#make_plot(prefix='t5', caL=0.0, saR=15.0, saL=15.0, u=1.0, N=3, curve_fun=ptb_straightline, addAngle=0)
 
 
 
