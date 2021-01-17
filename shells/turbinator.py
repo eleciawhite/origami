@@ -62,6 +62,7 @@ class side:
 
 def add_plot(ax, pt1, pt2, curve_fun, color):
     ptb = curve_fun(pt1, pt2)
+#    ax.plot(ptb.x, ptb.y, color+'x')
     bezier(ax, pt1, pt2, ptb, color)
 
     
@@ -88,95 +89,74 @@ def law_sines(length, ang_denom, ang_mult):
 def ptb_straightline(pt1, pt2):
     return pt1
 
-def make_plot(prefix='tb', caR=30.0, caL=30.0, saL=12.0, saR=15.0, u=1.0, N=15, curve_fun=ptb_straightline, ratio=0.5, addAngle=0.0):
+def make_plot(prefix='tb', show_plot=True, 
+            caR=15.0, caL=15.0, saL=12.0, saR=15.0, u=1.0, N=15, 
+            curve_fun=ptb_straightline, addAngle=0.0):
     
     figure, ax = plt.subplots()
     name = '{}_car{}_cal{}_sal{}_sar{}_N{}_add{}'.format(prefix, int(caL), int(caR), int(saL), int(saR), N, int(10*addAngle))
 
-    # angles
+    # angles from known 
     angBR = 90 + (caR)
     angBL = 90 + (caL)
-    aveSa = (saL + saR) / 2.0
     angCL = 180 - angBL - saL
     angCR = 180 - angBR - saR
+
+    # known length
+    BL_BR = u    
 
     # initial protoconch triangle
-    pointA0 = point(0,0)
-    A0_BL = law_sines(u, caL + caR, 90-caR)
-    A0_BR = law_sines(u, caL + caR, 90-caL)
-    pointBR = pointA0.pointFrom(A0_BR, caR)
-    pointBL = pointA0.pointFrom(A0_BL, -caL)
-    
-    saRatio = saL/(saL+saR)
-    A_BR = u * saRatio
-    A_BL = u * (1.0 - saRatio)
-    pointA = pointBR.pointFrom(A_BR, -90)
+    pointA = point(0,0)
+    A_BL = law_sines(BL_BR, caL + caR, 90-caR)
+    A_BR = law_sines(BL_BR, caL + caR, 90-caL)
+    pointBR = pointA.pointFrom(A_BR, caR)
+    pointBL = pointA.pointFrom(A_BL, -caL)
 
-    A0_A = pointA0.lengthTo(pointA)
-    sinncar=sin(radians(90-caR))
-    angA0R = degrees(asin(A_BR*sinncar/A0_A))
-    angDR = 180.0 - (90.0-caR) - angA0R
-    
-    sinncal=sin(radians(90-caL))
-    angA0L = degrees(asin(A_BL*sinncal/A0_A))
-    angDL = 180.0 - (90.0-caL) - angA0L
+    outerPolyVertices = [pointBR.pts(), pointA.pts(), pointBL.pts()]
+    prevA = pointA
 
-    outerPolyVertices = [pointBR.pts(), pointA0.pts(), pointBL.pts()]
-    add_plot(ax, pointA0, pointA, color='g', 
-            curve_fun=curve_fun)
+    for i in range(N + 1):
+        angCL = 180 - angBL - saL   # recalculate as it depends on saL which can change
+        angCR = 180 - angBR - saR   # recalculate as it depends on saR which can change
 
-    for i in range(N):
-        saL += addAngle
-        saR += addAngle
+        # this is a magical incantation supported by the unholy art of geometry
+        saSinRatio = sin(radians(saR)) / sin(radians(saL))
+        numerator = BL_BR * sin(radians(angBL)) * sin(radians(angBR))
+        denom_A =  saSinRatio * sin(radians(angCL)) * sin(radians(angBR))
+        denom_B = sin(radians(angCR)) * sin(radians(angBL))
+        A_CR =  numerator / (denom_A + denom_B)
 
-        angCL = 180 - angBL - saL
-        angCR = 180 - angBR - saR
+        A_CL = law_sines(A_CR, saL, saR)
+        A_BL = law_sines(A_CL, angBL, angCL)
+        A_BR = law_sines(A_CR, angBR, angCR)
 
-        A_CR = law_sines(A_BR, angCR, angBR)
+        pointA = pointBL.pointFrom(A_BL, 90.0)
+        pointBR = pointA.pointFrom(A_BR, 90.0)
         pointCR = pointA.pointFrom(A_CR, 90-saR)
-
-        A_CL = law_sines(A_BL, angCL, angBL)
         pointCL = pointA.pointFrom(A_CL, -(90-saL))
-        
-        D_CR = pointCR.lengthTo(pointCL)*saRatio
-        pointD = pointCR.pointFrom(D_CR, -90)
-        
 
-        print("lengths should all be the same")
-        print(pointA.lengthTo(pointD), law_sines(A_CL, angDL, saL), law_sines(A_CR, angDR, saR))
+        if i != N: # last pass is for the outer cut
+            add_plot(ax, pointA, pointBR, color='r', 
+                curve_fun=curve_fun)
+            add_plot(ax, pointA, pointBL, color='m', 
+                curve_fun=curve_fun)
 
-        add_plot(ax, pointA, pointBR, color='r', 
-            curve_fun=curve_fun)
-        add_plot(ax, pointA, pointBL, color='m', 
-            curve_fun=curve_fun)
+            add_plot(ax, pointA, pointCL, color='b', 
+                curve_fun=curve_fun)
+            add_plot(ax, pointA, pointCR, color='c', 
+                curve_fun=curve_fun)
+            
+            add_plot(ax, prevA, pointA, color='g', 
+                curve_fun=ptb_straightline)
 
-        add_plot(ax, pointA, pointCL, color='b', 
-            curve_fun=curve_fun)
-        add_plot(ax, pointA, pointCR, color='c', 
-            curve_fun=curve_fun)
-        
-        add_plot(ax, pointA, pointD, color='g', 
-            curve_fun=curve_fun)
+            pointBL = pointCL
+            pointBR = pointCR
+            BL_BR = pointCL.lengthTo(pointCR)
+            prevA = pointA
 
-        pointBL = pointCL
-        pointBR = pointCR
-        pointA = pointD
-        A_BR = pointA.lengthTo(pointBR)
-        A_BL = pointA.lengthTo(pointBL)
+            saL += addAngle
+            saR += addAngle
     
-    # finish making outer triangle for cutting
-    saL += addAngle
-    saR += addAngle
-
-    angCL = 180 - angBL - saL
-    angCR = 180 - angBR - saR
-
-    A_CR = law_sines(A_BR, angCR, angBR)
-    pointCR = pointA.pointFrom(A_CR, 90-saR)
-
-    A_CL = law_sines(A_BL, angCL, angBL)
-    pointCL = pointA.pointFrom(A_CL, -(90-saL))
-
     outerPolyVertices.extend([pointCL.pts(), pointCR.pts()]) 
     poly = Polygon(outerPolyVertices, facecolor='1.0', edgecolor='k')
     ax.add_patch(poly)
@@ -187,22 +167,32 @@ def make_plot(prefix='tb', caR=30.0, caL=30.0, saL=12.0, saR=15.0, u=1.0, N=15, 
 
 # Use an x division less than two or the curves fight the angle of growth
 def ptb_sumxdiv0975_avey(pt1, pt2):
-    xb = (pt1.x+pt2.x)/(2.0*0.975)
-    yb = (pt1.y+pt2.y)/2.0
+    divisor = 2.0 * 0.975
+    xb = (pt1.x+pt2.x)/divisor
+    yb = (pt1.y+pt2.y)/divisor
     return point(xb, yb)
 
-show_plot = True
+def ptb_sumxdiv095_avey(pt1, pt2):
+    divisor = 2.0 * 0.95
+    xb = (pt1.x+pt2.x)/divisor
+    yb = (pt1.y+pt2.y)/divisor
+    return point(xb, yb)
+    
+def ptb_sumxdiv090_avey(pt1, pt2):
+    divisor = 2.0 * 0.90
+    xb = (pt1.x+pt2.x)/divisor
+    yb = (pt1.y+pt2.y)/divisor
+    return point(xb, yb)
 
 
 #import pdb; pdb.set_trace()
-make_plot(prefix='t5', saR=12.0, saL=12.0, u=1.0, N=3, curve_fun=ptb_straightline, addAngle=0)
+#make_plot(prefix='t5', saR=12.0, saL=12.0, u=1.0, N=12, curve_fun=ptb_straightline, addAngle=0)
+#make_plot(prefix='t5', saR=15.0, saL=30.0, u=1.0, N=12, curve_fun=ptb_straightline, addAngle=0)#
+#make_plot(prefix='t5', caL=0.0, caR=30.0, saR=15.0, saL=15.0, u=1.0, N=12, curve_fun=ptb_straightline, addAngle=0)
 
-
-make_plot(prefix='t5', saR=15.0, saL=30.0, u=1.0, N=4, curve_fun=ptb_straightline, addAngle=0)
-
-
-#make_plot(prefix='t5', caL=0.0, saR=15.0, saL=15.0, u=1.0, N=3, curve_fun=ptb_straightline, addAngle=0)
-
-
+make_plot(prefix='t_0975', saR=15.0, saL=30.0, u=1.0, N=12, curve_fun=ptb_sumxdiv0975_avey, addAngle=0)
+make_plot(prefix='t_0975', caL =15.0, caR= 30.0, saR=15.0, saL=30.0, u=1.0, N=12, curve_fun=ptb_sumxdiv0975_avey, addAngle=0)
+make_plot(prefix='t_0975', caL=0.0, caR=30.0, saR=15.0, saL=15.0, u=1.0, N=12, curve_fun=ptb_sumxdiv0975_avey, addAngle=0)
+make_plot(prefix='t_0975', caL=0.0, caR=30.0, saR=15.0, saL=15.0, u=1.0, N=12, curve_fun=ptb_sumxdiv095_avey, addAngle=0)
 
 
