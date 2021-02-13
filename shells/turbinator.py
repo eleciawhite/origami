@@ -23,11 +23,21 @@
 # Look in the pics directory for a relevant diagram.
 #
 
+# sar < sal dextral
+# sal < sar sinistral
+# larger sa makes for a smaller protoconch, slower growth
+# addAngle negative acts as a growth retardant so outer shell does not get too big, positive causes a faster growth (smaller protoconch)
+
+# car + cal smaller means a larger protoconch and slower, smoother growth
+#   making it larger makes for a smaller protoconch but chunkier whorls
+# unbalanced ca gives height to the coil but unbalanced tails
+
 from math import *
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import collections  as mc
 from matplotlib.patches import Ellipse, Wedge, Polygon
+from matplotlib.path import Path
 import itertools
 
 class point:
@@ -91,10 +101,10 @@ def ptb_straightline(pt1, pt2):
 
 def make_plot(prefix='tb', show_plot=True, 
             caR=15.0, caL=15.0, saL=12.0, saR=15.0, u=1.0, N=15, 
-            curve_fun=ptb_straightline, addAngle=0.0):
+            curve_fun=ptb_straightline, kite=0, cutProtoconch = True, addAngle=0.0):
     
     figure, ax = plt.subplots()
-    name = '{}_car{}_cal{}_sal{}_sar{}_N{}_add{}'.format(prefix, int(caL), int(caR), int(saL), int(saR), N, int(10*addAngle))
+    name = '{}_cal{}_car{}_sal{}_sar{}_N{}_add{}'.format(prefix, int(caL), int(caR), int(saL), int(saR), N, int(100*addAngle))
 
     # angles from known 
     angBR = 90 + (caR)
@@ -112,7 +122,10 @@ def make_plot(prefix='tb', show_plot=True,
     pointBR = pointA.pointFrom(A_BR, caR)
     pointBL = pointA.pointFrom(A_BL, -caL)
 
-    outerPolyVertices = [pointBR.pts(), pointA.pts(), pointBL.pts()]
+    if cutProtoconch:
+        outerPolyVertices = [pointBR.pts(), pointBL.pts()]
+    else:
+        outerPolyVertices = [pointBR.pts(), pointA.pts(), pointBL.pts()]
     prevA = pointA
 
     for i in range(N + 1):
@@ -135,32 +148,60 @@ def make_plot(prefix='tb', show_plot=True,
         pointCR = pointA.pointFrom(A_CR, 90-saR)
         pointCL = pointA.pointFrom(A_CL, -(90-saL))
 
+
         if i != N: # last pass is for the outer cut
-            add_plot(ax, pointA, pointBR, color='r', 
-                curve_fun=curve_fun)
-            add_plot(ax, pointA, pointBL, color='m', 
-                curve_fun=curve_fun)
+        
+            if curve_fun==ptb_straightline:
+                add_plot(ax, pointBL, pointBR, color='r', 
+                    curve_fun=curve_fun)
+            else:
+                add_plot(ax, pointA, pointBR, color='r', 
+                    curve_fun=curve_fun)
+                add_plot(ax, pointA, pointBL, color='r', 
+                    curve_fun=curve_fun)
 
             add_plot(ax, pointA, pointCL, color='b', 
                 curve_fun=curve_fun)
-            add_plot(ax, pointA, pointCR, color='c', 
+            add_plot(ax, pointA, pointCR, color='b', 
                 curve_fun=curve_fun)
             
-            add_plot(ax, prevA, pointA, color='g', 
-                curve_fun=ptb_straightline)
+            if i == (N-kite):
+                kiteBL = pointBL
+                kiteBR = pointBR
+            
+            if cutProtoconch==False and i == 0:
+                add_plot(ax, prevA, pointA, color='g', curve_fun=ptb_straightline)
 
             pointBL = pointCL
             pointBR = pointCR
             BL_BR = pointCL.lengthTo(pointCR)
             prevA = pointA
 
-            saL += addAngle
-            saR += addAngle
+            saL += saL*addAngle
+            saR += saR*addAngle
     
-    outerPolyVertices.extend([pointCL.pts(), pointCR.pts()]) 
-    poly = Polygon(outerPolyVertices, facecolor='1.0', edgecolor='k')
-    ax.add_patch(poly)
+    if kite == 0:
+        outerPolyVertices.extend([pointCL.pts(), pointCR.pts()]) 
+    else:
+        halfC = pointCL.lengthTo(pointCR)/2.0
+        
+        outerPolyVertices.extend([kiteBL.pts(), pointCL.pointFrom(halfC, 90).pts(),kiteBR.pts()]) 
+        
+    poly = Polygon(outerPolyVertices, facecolor='1.0', edgecolor='k', transform=ax.transData)
+    #p = ax.add_patch(poly)
+    
+    path = Path(outerPolyVertices)
+    ax.set_clip_path(path)
+    ax.set_clip_on(True)
+    
+    add_plot(ax, pointA, pointCL, color='m', 
+                curve_fun=curve_fun)
+    #add_plot(ax, pointA, pointCR, color='m', 
+ #           curve_fun=curve_fun)
+    
     plt.axis('off')
+    plt.box(False)
+    
     ax.set_aspect(1), ax.autoscale()
     plt.savefig(name + ".svg")
     if show_plot: plt.title(name), plt.show()
@@ -186,13 +227,25 @@ def ptb_sumxdiv090_avey(pt1, pt2):
 
 
 #import pdb; pdb.set_trace()
-#make_plot(prefix='t5', saR=12.0, saL=12.0, u=1.0, N=12, curve_fun=ptb_straightline, addAngle=0)
-#make_plot(prefix='t5', saR=15.0, saL=30.0, u=1.0, N=12, curve_fun=ptb_straightline, addAngle=0)#
+add = 0.0
+
+# 25 25 17 15 20 0
+name = 'tst_'
+
+#all of these worked
+make_plot(prefix=name+'975', caL =25, caR = 25, saL=17, saR=17, u=1.0, N=15,  curve_fun=ptb_sumxdiv0975_avey, addAngle=0, kite=1, cutProtoconch = False)
+#make_plot(prefix=name+'95', caL =25, caR = 25, saL=17, saR=17, u=1.0, N=15,  curve_fun=ptb_sumxdiv095_avey, addAngle=0)
+#make_plot(prefix=name, caL =25, caR = 25, saL=20, saR=20, u=1.0, N=20,  curve_fun=ptb_straightline, addAngle=0.0)
+#make_plot(prefix=name+'975', caL =25, caR = 25, saL=12.5, saR=12.5, u=1.0, N=20,  curve_fun=ptb_sumxdiv095_avey, addAngle=0.0)
+#make_plot(prefix=name+'975', caL =25, caR = 25, saL=10.0, saR=10.0, u=1.0, N=20,  curve_fun=ptb_sumxdiv095_avey, addAngle=0.0)
+
 #make_plot(prefix='t5', caL=0.0, caR=30.0, saR=15.0, saL=15.0, u=1.0, N=12, curve_fun=ptb_straightline, addAngle=0)
 
-make_plot(prefix='t_0975', saR=15.0, saL=30.0, u=1.0, N=12, curve_fun=ptb_sumxdiv0975_avey, addAngle=0)
-make_plot(prefix='t_0975', caL =15.0, caR= 30.0, saR=15.0, saL=30.0, u=1.0, N=12, curve_fun=ptb_sumxdiv0975_avey, addAngle=0)
-make_plot(prefix='t_0975', caL=0.0, caR=30.0, saR=15.0, saL=15.0, u=1.0, N=12, curve_fun=ptb_sumxdiv0975_avey, addAngle=0)
-make_plot(prefix='t_0975', caL=0.0, caR=30.0, saR=15.0, saL=15.0, u=1.0, N=12, curve_fun=ptb_sumxdiv095_avey, addAngle=0)
+# those grew too fast... 
+#make_plot(prefix=name, caL =15, caR = 15, saL=20, saR=20, u=1.0, N=20,  curve_fun=ptb_straightline, addAngle=0.0)
 
+#make_plot(prefix=name, caL =20, caR = 20, saL=20, saR=20, u=1.0, N=20,  curve_fun=ptb_straightline, addAngle=0.0)
 
+#make_plot(prefix=name, caL =15, caR = 15, saL=15, saR=15, u=1.0, N=20,  curve_fun=ptb_straightline, addAngle=0.0)
+
+#make_plot(prefix=name, caL =10, caR = 10, saL=25, saR=25, u=1.0, N=20,  curve_fun=ptb_straightline, addAngle=0.0)
