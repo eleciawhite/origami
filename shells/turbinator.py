@@ -36,9 +36,11 @@ from math import *
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import collections  as mc
+import matplotlib.patches as patches
 from matplotlib.patches import Ellipse, Wedge, Polygon
 from matplotlib.path import Path
 import itertools
+
 
 class point:
     def __init__(self, x, y):
@@ -72,24 +74,17 @@ class side:
 
 def add_plot(ax, pt1, pt2, curve_fun, color):
     ptb = curve_fun(pt1, pt2)
-#    ax.plot(ptb.x, ptb.y, color+'x')
-    bezier(ax, pt1, pt2, ptb, color)
+    verts = [pt1.pts(), pt1.pts(), ptb.pts(), pt2.pts()]
+    codes = [
+        Path.MOVETO,
+        Path.CURVE4,
+        Path.CURVE4,
+        Path.CURVE4,
+    ]
 
-    
-def bezier(ax, pt1, pt2, ptb, color):
-    npoints = 2
-    numbers = [i for i in range(npoints)]
-    bezier_path = np.arange(0.0, 1.01, 0.01)
-
-    x1y1 = x1, y1 = pt1.x, pt1.y
-    x2y2 = x2, y2 = pt2.x, pt2.y
-    xbyb = xb, yb = ptb.x, ptb.y
-
-    # Compute and store the Bezier curve points
-    x = (1 - bezier_path)** 2 * x1 + 2 * (1 - bezier_path) * bezier_path * xb + bezier_path** 2 * x2
-    y = (1 - bezier_path)** 2 * y1 + 2 * (1 - bezier_path) * bezier_path * yb + bezier_path** 2 * y2
-
-    ax.plot(x, y, color)
+    path = Path(verts, codes)
+    patch = patches.PathPatch(path, facecolor='none', edgecolor=color)
+    ax.add_patch(patch)
 
 def law_sines(length, ang_denom, ang_mult):
     val = length*sin(radians(ang_mult)) / sin(radians(ang_denom))
@@ -186,16 +181,17 @@ def make_plot(prefix='tb', show_plot=True,
         halfC = pointCL.lengthTo(pointCR)/2.0
         
         outerPolyVertices.extend([kiteBL.pts(), pointCL.pointFrom(halfC, 90).pts(),kiteBR.pts()]) 
-        
-    poly = Polygon(outerPolyVertices, facecolor='1.0', edgecolor='k', transform=ax.transData)
-    #p = ax.add_patch(poly)
-    
+
+
+    poly = Polygon(outerPolyVertices,alpha=0.5, facecolor='white', edgecolor='k', transform=ax.transData)
+    p = ax.add_patch(poly)
+
     path = Path(outerPolyVertices)
-    ax.set_clip_path(path)
-    ax.set_clip_on(True)
+    p.set_clip_path(path, transform=ax.transAxes)
+    p.set_clip_on(True)
     
-    add_plot(ax, pointA, pointCL, color='m', 
-                curve_fun=curve_fun)
+#    add_plot(ax, pointA, pointCL, color='m', 
+#                curve_fun=curve_fun)
     #add_plot(ax, pointA, pointCR, color='m', 
  #           curve_fun=curve_fun)
     
@@ -233,7 +229,7 @@ add = 0.0
 name = 'tst_'
 
 #all of these worked
-make_plot(prefix=name+'975', caL =25, caR = 25, saL=17, saR=17, u=1.0, N=15,  curve_fun=ptb_sumxdiv0975_avey, addAngle=0, kite=1, cutProtoconch = False)
+make_plot(prefix=name+'975', caL =25, caR = 25, saL=17, saR=17, u=1.0, N=2,  curve_fun=ptb_sumxdiv095_avey, addAngle=0, kite=1, cutProtoconch = False)
 #make_plot(prefix=name+'95', caL =25, caR = 25, saL=17, saR=17, u=1.0, N=15,  curve_fun=ptb_sumxdiv095_avey, addAngle=0)
 #make_plot(prefix=name, caL =25, caR = 25, saL=20, saR=20, u=1.0, N=20,  curve_fun=ptb_straightline, addAngle=0.0)
 #make_plot(prefix=name+'975', caL =25, caR = 25, saL=12.5, saR=12.5, u=1.0, N=20,  curve_fun=ptb_sumxdiv095_avey, addAngle=0.0)
