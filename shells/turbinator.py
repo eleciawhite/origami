@@ -36,11 +36,9 @@ from math import *
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import collections  as mc
-import matplotlib.patches as patches
 from matplotlib.patches import Ellipse, Wedge, Polygon
 from matplotlib.path import Path
 import itertools
-
 
 class point:
     def __init__(self, x, y):
@@ -72,19 +70,46 @@ class side:
     def length(self):
         return self.pointA.lengthTo(self.pointB)
 
-def add_plot(ax, pt1, pt2, curve_fun, color):
+def add_plot(paths, pt1, pt2, curve_fun, color):
     ptb = curve_fun(pt1, pt2)
-    verts = [pt1.pts(), pt1.pts(), ptb.pts(), pt2.pts()]
-    codes = [
-        Path.MOVETO,
-        Path.CURVE4,
-        Path.CURVE4,
-        Path.CURVE4,
-    ]
+    bezier(paths, pt1, pt2, ptb, color)
 
-    path = Path(verts, codes)
-    patch = patches.PathPatch(path, facecolor='none', edgecolor=color)
-    ax.add_patch(patch)
+def bezier(paths, pt1, pt2, ptb, color):
+    npoints = 2
+    numbers = [i for i in range(npoints)]
+#    bezier_path = np.arange(0.0, 1.01, 0.01)
+    bezier_path = np.arange(0.0, 1.01, 0.02)
+
+    x1y1 = x1, y1 = pt1.x, pt1.y
+    x2y2 = x2, y2 = pt2.x, pt2.y
+    xbyb = xb, yb = ptb.x, ptb.y
+
+    # Compute and store the Bezier curve points
+    x = (1 - bezier_path)** 2 * x1 + 2 * (1 - bezier_path) * bezier_path * xb + bezier_path** 2 * x2
+    y = (1 - bezier_path)** 2 * y1 + 2 * (1 - bezier_path) * bezier_path * yb + bezier_path** 2 * y2
+
+    curve = np.column_stack((x,y)).reshape(x.shape[0],2)
+    paths.append([curve, color])
+ 
+
+# Given a line of two points P1 and P2, is P3 on this line?
+# If the distance P1_P3 + P3_P2 = distance P1_P2 the P3 is on the line
+def dist(x1, y1, x2, y2, x3, y3): # x3,y3 is the point to check
+    p1_p2_total = sqrt((x2-x1)**2 + (y2-y1)**2)
+    p1_p3 = sqrt((x3-x1)**2 + (y3-y1)**2)
+    p2_p3 = sqrt((x3-x2)**2 + (y3-y2)**2)
+    return (p1_p3 + p2_p3) - p1_p2_total # not really worried about actual dist so no sqrts
+
+def cutAtIntersection(curve, line, epsilon = 0.0035):
+    ((x1,y1),(x2,y2)) = line
+
+    for i in range(curve.shape[0]):
+        xc, yc = curve[i]
+        d = dist(x1, y1, x2, y2, xc, yc)
+        if d < epsilon:
+           return curve[:i]
+    return curve
+
 
 def law_sines(length, ang_denom, ang_mult):
     val = length*sin(radians(ang_mult)) / sin(radians(ang_denom))
@@ -123,6 +148,8 @@ def make_plot(prefix='tb', show_plot=True,
         outerPolyVertices = [pointBR.pts(), pointA.pts(), pointBL.pts()]
     prevA = pointA
 
+    paths =[]
+
     for i in range(N + 1):
         angCL = 180 - angBL - saL   # recalculate as it depends on saL which can change
         angCR = 180 - angBR - saR   # recalculate as it depends on saR which can change
@@ -147,17 +174,17 @@ def make_plot(prefix='tb', show_plot=True,
         if i != N: # last pass is for the outer cut
         
             if curve_fun==ptb_straightline:
-                add_plot(ax, pointBL, pointBR, color='r', 
+                add_plot(paths, pointBL, pointBR, color='r', 
                     curve_fun=curve_fun)
             else:
-                add_plot(ax, pointA, pointBR, color='r', 
+                add_plot(paths, pointA, pointBR, color='r', 
                     curve_fun=curve_fun)
-                add_plot(ax, pointA, pointBL, color='r', 
+                add_plot(paths, pointA, pointBL, color='r', 
                     curve_fun=curve_fun)
 
-            add_plot(ax, pointA, pointCL, color='b', 
+            add_plot(paths, pointA, pointCL, color='b', 
                 curve_fun=curve_fun)
-            add_plot(ax, pointA, pointCR, color='b', 
+            add_plot(paths, pointA, pointCR, color='c', 
                 curve_fun=curve_fun)
             
             if i == (N-kite):
@@ -165,7 +192,7 @@ def make_plot(prefix='tb', show_plot=True,
                 kiteBR = pointBR
             
             if cutProtoconch==False and i == 0:
-                add_plot(ax, prevA, pointA, color='g', curve_fun=ptb_straightline)
+                add_plot(paths, prevA, pointA, color='g', curve_fun=ptb_straightline)
 
             pointBL = pointCL
             pointBR = pointCR
@@ -177,24 +204,26 @@ def make_plot(prefix='tb', show_plot=True,
     
     if kite == 0:
         outerPolyVertices.extend([pointCL.pts(), pointCR.pts()]) 
-    else:
+    else: # cut off kite and also modify the lines
         halfC = pointCL.lengthTo(pointCR)/2.0
-        
         outerPolyVertices.extend([kiteBL.pts(), pointCL.pointFrom(halfC, 90).pts(),kiteBR.pts()]) 
+        left = [kiteBL.pts(), pointCL.pointFrom(halfC, 90).pts()]
+        right = [pointCL.pointFrom(halfC, 90).pts(),kiteBR.pts()]
 
+        Npaths = len(paths)
+        curves_per_whorl = 4        
+        for i in range(Npaths-(kite*curves_per_whorl), Npaths):
+            curve, color = paths[i]
+            curve = cutAtIntersection(curve, left)
+            curve = cutAtIntersection(curve, right)
+            paths[i] = (curve,color)
 
-    poly = Polygon(outerPolyVertices,alpha=0.5, facecolor='white', edgecolor='k', transform=ax.transData)
+    for curve, color in paths:
+           ax.plot(curve[:,0], curve[:,1], color)
+
+    poly = Polygon(outerPolyVertices, facecolor='1.0', edgecolor='k')
     p = ax.add_patch(poly)
-
-    path = Path(outerPolyVertices)
-    p.set_clip_path(path, transform=ax.transAxes)
-    p.set_clip_on(True)
-    
-#    add_plot(ax, pointA, pointCL, color='m', 
-#                curve_fun=curve_fun)
-    #add_plot(ax, pointA, pointCR, color='m', 
- #           curve_fun=curve_fun)
-    
+        
     plt.axis('off')
     plt.box(False)
     
@@ -226,22 +255,6 @@ def ptb_sumxdiv090_avey(pt1, pt2):
 add = 0.0
 
 # 25 25 17 15 20 0
-name = 'tst_'
+name = 'c_'
 
-#all of these worked
-make_plot(prefix=name+'975', caL =25, caR = 25, saL=17, saR=17, u=1.0, N=2,  curve_fun=ptb_sumxdiv095_avey, addAngle=0, kite=1, cutProtoconch = False)
-#make_plot(prefix=name+'95', caL =25, caR = 25, saL=17, saR=17, u=1.0, N=15,  curve_fun=ptb_sumxdiv095_avey, addAngle=0)
-#make_plot(prefix=name, caL =25, caR = 25, saL=20, saR=20, u=1.0, N=20,  curve_fun=ptb_straightline, addAngle=0.0)
-#make_plot(prefix=name+'975', caL =25, caR = 25, saL=12.5, saR=12.5, u=1.0, N=20,  curve_fun=ptb_sumxdiv095_avey, addAngle=0.0)
-#make_plot(prefix=name+'975', caL =25, caR = 25, saL=10.0, saR=10.0, u=1.0, N=20,  curve_fun=ptb_sumxdiv095_avey, addAngle=0.0)
-
-#make_plot(prefix='t5', caL=0.0, caR=30.0, saR=15.0, saL=15.0, u=1.0, N=12, curve_fun=ptb_straightline, addAngle=0)
-
-# those grew too fast... 
-#make_plot(prefix=name, caL =15, caR = 15, saL=20, saR=20, u=1.0, N=20,  curve_fun=ptb_straightline, addAngle=0.0)
-
-#make_plot(prefix=name, caL =20, caR = 20, saL=20, saR=20, u=1.0, N=20,  curve_fun=ptb_straightline, addAngle=0.0)
-
-#make_plot(prefix=name, caL =15, caR = 15, saL=15, saR=15, u=1.0, N=20,  curve_fun=ptb_straightline, addAngle=0.0)
-
-#make_plot(prefix=name, caL =10, caR = 10, saL=25, saR=25, u=1.0, N=20,  curve_fun=ptb_straightline, addAngle=0.0)
+make_plot(prefix=name+'k3_95', caL =25, caR = 25, saL=17, saR=17, u=1.0, N=25, curve_fun=ptb_sumxdiv095_avey, kite=3, cutProtoconch = False)
