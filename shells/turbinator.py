@@ -184,7 +184,7 @@ def make_plot(prefix='tb', show_plot=True,
 
             add_plot(paths, pointA, pointCL, color='b', 
                 curve_fun=curve_fun)
-            add_plot(paths, pointA, pointCR, color='c', 
+            add_plot(paths, pointA, pointCR, color='b', 
                 curve_fun=curve_fun)
             
             if i == (N-kite):
@@ -254,7 +254,11 @@ def ptb_sumxdiv090_avey(pt1, pt2):
 #import pdb; pdb.set_trace()
 add = 0.0
 
-# 25 25 17 15 20 0
-name = 'c_'
+name = 'snails_'
 
-make_plot(prefix=name+'k3_95', caL =25, caR = 25, saL=17, saR=17, u=1.0, N=25, curve_fun=ptb_sumxdiv095_avey, kite=3, cutProtoconch = False)
+#planispiral 
+make_plot(prefix=name+'planispiral', caL =25, caR = 25, saL=17, saR=17, u=1.0, N=25, curve_fun=ptb_sumxdiv095_avey, kite=3)
+
+make_plot(prefix=name+'curvy', caL =0, caR = 15, saL=35, saR=25, u=1.0, N=20, curve_fun=ptb_sumxdiv095_avey, kite=1)
+
+make_plot(prefix=name+'tall', caL =0, caR = 15, saL=35, saR=25, u=1.0, N=20, curve_fun=ptb_sumxdiv0975_avey, kite=1)
