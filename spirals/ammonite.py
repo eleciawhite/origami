@@ -109,8 +109,11 @@ def triangle_find_vertices_aas(angleA, angleC, sideAB):
     pointC = sideAB.pointA.pointFrom(lengthAC, angleA)
     #print('AC len {} BC len {} AB len {} BC {} AC {}'.format(lengthAC, lengthBC, sideAB.length(), pointC.lengthTo(sideAB.pointB), pointC.lengthTo(sideAB.pointA)))
     return [sideAB.pointA, sideAB.pointB, pointC]
-    
-def make_plot(ax, ca, sa, u, N, curve_fun, distmult=1):
+
+def ptb_straightline(pt1, pt2):
+    return pt1
+
+def make_plot(ax, ca=20, sa=15, u=1.0, N=15, curve_fun=ptb_straightline, distmult=1):
     angleC = 90.0 - ca/2.0 - sa
     angleA = sa
 
@@ -159,26 +162,6 @@ def make_plot(ax, ca, sa, u, N, curve_fun, distmult=1):
     plt.axis('off')
     ax.set_aspect(1), ax.autoscale()
         
-# use for straight line versions
-def ptb_straightline(pt1, pt2):
-    return pt1
-
-# Use an x division less than two or the curves fight the angle of growth
-def ptb_sumxdiv0975_avey(pt1, pt2):
-    xb = (pt1.x+pt2.x)/(2.0*0.975)
-    yb = (pt1.y+pt2.y)/2.0
-    return point(xb, yb)
-    
-def ptb_sumxdiv095_avey(pt1, pt2):
-    xb = (pt1.x+pt2.x)/(2.0*0.95)
-    yb = (pt1.y+pt2.y)/2.0
-    return point(xb, yb)
-    
-def ptb_sumxdiv090_avey(pt1, pt2):
-    xb = (pt1.x+pt2.x)/(2.0*0.9)
-    yb = (pt1.y+pt2.y)/2.0
-    return point(xb, yb)
-
 # example values
 ca = 30.0 # central angle, book uses 30 to 45 degrees
 sa = 15.0 # spirality angle book uses 12 to 15 degrees
@@ -188,20 +171,20 @@ N  = 20  # number of iterations
 show_plot = True
 
 figure, ax = plt.subplots()
-name = 'fg24_straight_ca30_sa12_N20'
-make_plot(ax, ca=30, sa=12, u=1, N=20, curve_fun=ptb_straightline)
+name = 'fg24_ca30_sa12_N20'
+make_plot(ax, ca=30, sa=12, N=20, curve_fun=ptb_straightline)
 plt.savefig(name + ".svg")
 if show_plot: plt.title(name), plt.show()
 
 figure, ax = plt.subplots()
-name = 'fg28_bez0975_ca30_sa10_N20'
-make_plot(ax, ca=30, sa=10, u=1, N=20, curve_fun=ptb_sumxdiv0975_avey)
+name = 'fg28_ca30_sa10_N20'
+make_plot(ax, ca=30, sa=10, N=20, curve_fun=ptb_straightline)
 plt.savefig(name + ".svg")
 if show_plot: plt.title(name), plt.show()
 
 figure, ax = plt.subplots()
-name = 'fg28_bez095_ca45_sa15_N12_dist2'
-make_plot(ax, ca=30, sa=15, u=1, N=12, curve_fun=ptb_sumxdiv095_avey, distmult=2)
+name = 'fg28_ca45_sa15_N12_dist2'
+make_plot(ax, ca=30, sa=15, N=12, curve_fun=ptb_straightline, distmult=2)
 plt.savefig(name + ".svg")
 if show_plot: plt.title(name), plt.show()
 
