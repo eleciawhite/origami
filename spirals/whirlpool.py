@@ -150,12 +150,12 @@ def make_plot(prefix='wp', show_plot=True, polygon_sides=3, rotation_rho=10, spi
                 totalSoFar += angle_offsets[i]
                 ac_len[i] = distance(row[i-1].vertices[1], row[i].vertices[1]) # triangle1.b to triangle2.b
 
-        print(angle_offsets, ac_len)
         ac_len[0] = ac_len[-1]
-        row_origin = [row[0].vertices[1][0], row[0].vertices[1][1] - ac_len[0]]
+        print(angle_offsets, ac_len)
 
         # Move row_origin
-        # calculate a_g_len
+        row_origin = [row[0].vertices[1][0], row[0].vertices[1][1] - ac_len[0]]
+
     # end layers for
 
     print("row {}".format(len(rows)))
