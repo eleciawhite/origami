@@ -58,7 +58,15 @@ def update_angle_offset(angle_offset, rho):
         if angle_offset[i] > 0.0001: # epsilon
             angle_offset[i] = rho
     return angle_offset
-        
+       
+def make_basic_triangle_vertices(origin, ac_len, basic):
+    a = point(origin[0], origin[1])
+    c = a.pointFrom(ac_len, 0.0)
+    ab_len = law_sines(ac_len, basic.beta, basic.gamma)
+    b = a.pointFrom(ab_len, basic.alpha)
+    vertices = [(a.x, a.y), (b.x, b.y), (c.x, c.y)]
+    return vertices
+
 
 def make_plot(prefix='wp', show_plot=True, polygon_sides=3, rotation_rho=10, spirality_sigma=20, 
             N=10, glue_tab = False,
@@ -86,28 +94,24 @@ def make_plot(prefix='wp', show_plot=True, polygon_sides=3, rotation_rho=10, spi
     if angle_offsets is None:
         angle_offsets = [rotation_rho  for x in list(range(polygon_sides))]
         angle_offsets[0]=0.0
-
-    a_c_len = 10.0
-    row_origin = point(0.0, 0.0)
+    
+    ac_len = [10] * polygon_sides
+    row_origin = [0.0, 0.0]
     rows = []
     triangles = []
     for i in range(N):
-        # create a basic triangle of ag_len with angles given
-        a = row_origin
-        c = a.pointFrom(a_c_len, 0.0)
-        a_b_len = law_sines(a_c_len, basic.beta, basic.gamma)
-        b = a.pointFrom(a_b_len, basic.alpha)
-        print("ab and ac len "),
-        print(a_b_len, a_c_len)
-        vertices = [(a.x, a.y), (b.x, b.y), (c.x, c.y)]
+        # create a basic triangle of ac_len with angles given
+        vertices = make_basic_triangle_vertices(row_origin, ac_len[0], basic)       
         print(vertices)
         color = ["red", "green", "blue", "orange", "yellow", "cyan"]
         start = row_origin
         path = Path(vertices)
         row = []
+#        import pdb; pdb.set_trace()
+
         y_translation =0.0
         x_translation =0.0
-#        import pdb; pdb.set_trace()
+
         for n in range(polygon_sides):
             # put triangle in position at the angle_offset and position
             r = mpl.transforms.Affine2D().rotate_deg_around(
@@ -128,23 +132,27 @@ def make_plot(prefix='wp', show_plot=True, polygon_sides=3, rotation_rho=10, spi
             y_translation = path.vertices[2][1] - path.vertices[0][1]
             new_ac_len = distance(path.vertices[0], path.vertices[2])
             print("translation %d, %f %f %f"%(n, x_translation, y_translation, new_ac_len))
+
+            #setup next point
+            vertices = make_basic_triangle_vertices(path.vertices[2], ac_len[n], basic)       
+
+
+
+
         # end poly for
         rows.append(row)
-        a_c_len = distance(row[0].vertices[1], row[1].vertices[1]) # triangle1.b to triangle2.b
 
         totalSoFar = 0.0
         for i in range(len(angle_offsets)):
             if i > 0:
                 # getting the atan from flat... not the right way, need from previous
                 angle_offsets[i] = atan_deg(row[i-1].vertices[1], row[i].vertices[1]) - totalSoFar
-#                angle_offsets[i] = atan_deg(row[0].vertices[1], row[1].vertices[1]) 
                 totalSoFar += angle_offsets[i]
-                a_c_len = distance(row[i-1].vertices[1], row[i].vertices[1]) # triangle1.b to triangle2.b
-                print("ac len %f"%(a_c_len))
+                ac_len[i] = distance(row[i-1].vertices[1], row[i].vertices[1]) # triangle1.b to triangle2.b
 
-#        angle_offsets[-1] = rotation_rho
-        print(angle_offsets)
-        row_origin = point(b.x, b.y-a_c_len)
+        print(angle_offsets, ac_len)
+        ac_len[0] = ac_len[-1]
+        row_origin = [row[0].vertices[1][0], row[0].vertices[1][1] - ac_len[0]]
 
         # Move row_origin
         # calculate a_g_len
@@ -166,6 +174,6 @@ def make_plot(prefix='wp', show_plot=True, polygon_sides=3, rotation_rho=10, spi
 
 
 make_plot(prefix='wp', show_plot=True, polygon_sides=4, 
-            rotation_rho=20, spirality_sigma=20, 
+            rotation_rho=10, spirality_sigma=40, 
             N=3, glue_tab = False,
             cut_tip = True, angle_offsets = None)
