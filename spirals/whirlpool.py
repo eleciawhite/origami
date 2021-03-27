@@ -1,6 +1,6 @@
 # Generate a whirlpool (or screw shell) from triangles
 # This method is based in the one decribed in Spirals 
-# by Tomoko Fuse for Ammonites.
+# by Tomoko Fuse for Whirlpool Spirals.
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -61,11 +61,25 @@ def update_angle_offset(angle_offset, rho):
        
 def make_basic_triangle_vertices(origin, ac_len, basic):
     a = point(origin[0], origin[1])
-    c = a.pointFrom(ac_len, 0.0)
+    c = a.pointFrom(ac_len, 0.0)  # FIXME, is this right?
     ab_len = law_sines(ac_len, basic.beta, basic.gamma)
     b = a.pointFrom(ab_len, basic.alpha)
     vertices = [(a.x, a.y), (b.x, b.y), (c.x, c.y)]
     return vertices
+
+def make_next_triangle(origin, c, basic):
+    a = point(origin[0], origin[1])
+    c = point(c[0], c[1])
+    ac_len = a.lengthTo(c)
+    angle_offset = atan_deg(origin, [c.x, c.y])
+    ab_len = law_sines(ac_len, basic.beta, basic.gamma)
+    b = a.pointFrom(ab_len, basic.alpha + angle_offset)
+    vertices = [(a.x, a.y), (b.x, b.y), (c.x, c.y)]
+    print("make next triangle")
+    print(vertices)
+    ac_len = a.lengthTo(c)
+    print(angle_offset,ac_len, ab_len)
+    return vertices, ac_len
 
 
 def make_plot(prefix='wp', show_plot=True, polygon_sides=3, rotation_rho=10, spirality_sigma=20, 
@@ -92,78 +106,62 @@ def make_plot(prefix='wp', show_plot=True, polygon_sides=3, rotation_rho=10, spi
 
     # standard whirlpool
     if angle_offsets is None:
-        angle_offsets = [rotation_rho  for x in list(range(polygon_sides))]
-        angle_offsets[0]=0.0
+        original_angle_offsets = [rotation_rho*x  for x in list(range(polygon_sides))]
+        angle_offsets = [rotation_rho*x  for x in list(range(polygon_sides))]
     
-    ac_len = [10] * polygon_sides
+    ac_len = 10.0
     row_origin = [0.0, 0.0]
     rows = []
     triangles = []
-    for i in range(N):
+    for layer in range(N):
         # create a basic triangle of ac_len with angles given
-        vertices = make_basic_triangle_vertices(row_origin, ac_len[0], basic)       
+        vertices = make_basic_triangle_vertices(row_origin, ac_len, basic)       
         print(vertices)
         color = ["red", "green", "blue", "orange", "yellow", "cyan"]
         start = row_origin
-        path = Path(vertices)
         row = []
-#        import pdb; pdb.set_trace()
 
-        y_translation =0.0
-        x_translation =0.0
+        y_translation = 0.0
+        x_translation = 0.0
 
         for n in range(polygon_sides):
-            # put triangle in position at the angle_offset and position
+            path = Path(vertices)
             r = mpl.transforms.Affine2D().rotate_deg_around(
                 path.vertices[0][0], path.vertices[0][1], 
                 -angle_offsets[n])
             t = mpl.transforms.Affine2D().translate(x_translation, y_translation)  
             tra = r + t 
             path = path.transformed(tra)
-            
+                
+
+            # put triangle in position at the angle_offset and position
             row.append(path)
-            
             print(color[n])
             print(path)
             patch = patches.PathPatch(path, facecolor=color[n])
             ax.add_patch(patch)
-            
-            x_translation = path.vertices[2][0] - path.vertices[0][0]
-            y_translation = path.vertices[2][1] - path.vertices[0][1]
-            new_ac_len = distance(path.vertices[0], path.vertices[2])
-            print("translation %d, %f %f %f"%(n, x_translation, y_translation, new_ac_len))
 
-            #setup next point
-            vertices = make_basic_triangle_vertices(path.vertices[2], ac_len[n], basic)       
-
-
+            next_vertices = make_basic_triangle_vertices(origin = path.vertices[2], ac_len=ac_len, basic=basic)  
+            vertices = next_vertices
 
 
         # end poly for
-        rows.append(row)
+        rows.append(row) # big matrix of paths so we can make a cut path
 
-        totalSoFar = 0.0
-        for i in range(len(angle_offsets)):
-            if i > 0:
-                # getting the atan from flat... not the right way, need from previous
-                angle_offsets[i] = atan_deg(row[i-1].vertices[1], row[i].vertices[1]) - totalSoFar
-                totalSoFar += angle_offsets[i]
-                ac_len[i] = distance(row[i-1].vertices[1], row[i].vertices[1]) # triangle1.b to triangle2.b
+        # Calculate angle offsets then move row_origin
+        ac_len = distance(row[0].vertices[1], row[1].vertices[1])
+        angoff = atan_deg(row[0].vertices[1], row[1].vertices[1]) - original_angle_offsets[1]
 
-        ac_len[0] = ac_len[-1]
-        print(angle_offsets, ac_len)
+        for n in range(polygon_sides):
+            angle_offsets[n] = original_angle_offsets[n] + angoff
+        b = point(row[0].vertices[1][0],row[0].vertices[1][1])
+        a = b.pointFrom(-ac_len, angoff)
 
-        # Move row_origin
-        row_origin = [row[0].vertices[1][0], row[0].vertices[1][1] - ac_len[0]]
-
+        row_origin = [a.x, a.y]
+        print(row_origin, ac_len)
+        print(angle_offsets)
     # end layers for
 
-    print("row {}".format(len(rows)))
-    print("tri {}".format(len(triangles)))
-
-#    plt.axis('off')
-#    plt.box(False)
-    
     ax.grid('on')
     ax.set_aspect(1), 
     ax.autoscale()
@@ -171,9 +169,7 @@ def make_plot(prefix='wp', show_plot=True, polygon_sides=3, rotation_rho=10, spi
     if show_plot: plt.title(name), plt.show()
 
 
-
-
-make_plot(prefix='wp', show_plot=True, polygon_sides=4, 
-            rotation_rho=10, spirality_sigma=40, 
-            N=3, glue_tab = False,
+make_plot(prefix='wp', show_plot=True, polygon_sides=6, 
+            rotation_rho=10, spirality_sigma=20, 
+            N=14, glue_tab = False,
             cut_tip = True, angle_offsets = None)
