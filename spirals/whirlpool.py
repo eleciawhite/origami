@@ -84,7 +84,8 @@ def make_next_triangle(origin, c, basic):
 
 def make_plot(prefix='wp', show_plot=True, polygon_sides=3, rotation_rho=10, spirality_sigma=20, 
             N=10, glue_tab = False,
-            cut_tip = True, angle_offsets = None):
+            cut_tip = True, cut_bottom = True,
+            angle_offsets = None):
 
     fig, ax = plt.subplots()
     name = '{}_poly{}_rho{}_sig{}_N{}'.format(prefix,
@@ -121,29 +122,21 @@ def make_plot(prefix='wp', show_plot=True, polygon_sides=3, rotation_rho=10, spi
         start = row_origin
         row = []
 
-        y_translation = 0.0
-        x_translation = 0.0
-
         for n in range(polygon_sides):
             path = Path(vertices)
             r = mpl.transforms.Affine2D().rotate_deg_around(
                 path.vertices[0][0], path.vertices[0][1], 
                 -angle_offsets[n])
-            t = mpl.transforms.Affine2D().translate(x_translation, y_translation)  
-            tra = r + t 
-            path = path.transformed(tra)
+            path = path.transformed(r)
                 
 
             # put triangle in position at the angle_offset and position
             row.append(path)
             print(color[n])
             print(path)
-            patch = patches.PathPatch(path, facecolor=color[n])
-            ax.add_patch(patch)
 
             next_vertices = make_basic_triangle_vertices(origin = path.vertices[2], ac_len=ac_len, basic=basic)  
             vertices = next_vertices
-
 
         # end poly for
         rows.append(row) # big matrix of paths so we can make a cut path
@@ -162,14 +155,47 @@ def make_plot(prefix='wp', show_plot=True, polygon_sides=3, rotation_rho=10, spi
         print(angle_offsets)
     # end layers for
 
-    ax.grid('on')
+    if 1:
+        # make an outline for cutting, use cut_tip and cut_bottom to control it
+        cut_vertices = []
+        for r in rows: # start at 0,0 and go clockwise, adding each A point in the column
+            cut_vertices.append(r[0].vertices[0])
+        if cut_tip:
+            path = rows[-1][0]
+            pta = path.vertices[0] 
+            ptb = path.vertices[1] 
+            ab_mid = (pta + ptb)/2.0
+            rot = mpl.transforms.Affine2D().rotate_deg_around(ab_mid[0], ab_mid[1], 180.0) 
+            v = path.transformed(rot).vertices[-1]
+            cut_vertices.append(v)  
+
+            for n in range(polygon_sides): # add B points of the top (smallest) row
+                cut_vertices.append(rows[-1][n].vertices[1])
+        # else calculate the meeting point and use that
+        for i in range(len(rows)): # back down the column using the C points on this side
+            cut_vertices.append(rows[-(i+1)][-1].vertices[2])
+        if cut_bottom: 
+            for n in range(polygon_sides): # along the wide bottom until back to start
+                cut_vertices.append(rows[0][-(n+1)].vertices[0])
+        cut_path = Path(cut_vertices)
+        patch = patches.PathPatch(cut_path, facecolor='1.0', edgecolor='k')
+        ax.add_patch(patch)
+
+        for r in rows:
+            for n in range(polygon_sides):               
+                patch = patches.PathPatch(r[n], facecolor=color[n], edgecolor='k')
+                ax.add_patch(patch)
+
+
+
+    ax.grid('off')
     ax.set_aspect(1), 
     ax.autoscale()
     plt.savefig(name + ".svg")
     if show_plot: plt.title(name), plt.show()
 
 
-make_plot(prefix='wp', show_plot=True, polygon_sides=6, 
+make_plot(prefix='wp', show_plot=True, polygon_sides=3, 
             rotation_rho=10, spirality_sigma=20, 
-            N=14, glue_tab = False,
+            N=12, glue_tab = False,
             cut_tip = True, angle_offsets = None)
