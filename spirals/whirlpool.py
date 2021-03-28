@@ -59,32 +59,26 @@ def update_angle_offset(angle_offset, rho):
             angle_offset[i] = rho
     return angle_offset
        
+def make_basic_triangle_vertices_orig(origin, ac_len, basic):
+    a = point(origin[0], origin[1])
+    c = a.pointFrom(ac_len, 0.0)  # FIXME, is this right?
+    ab_len = law_sines(ac_len, basic.beta, basic.gamma)
+    b = a.pointFrom(ab_len, basic.alpha)
+    vertices = [(a.x, a.y), (b.x, b.y), (c.x, c.y), (a.x, a.y)]
+    return vertices
+
+#switch to returning the path to send codes to Path
 def make_basic_triangle_vertices(origin, ac_len, basic):
     a = point(origin[0], origin[1])
     c = a.pointFrom(ac_len, 0.0)  # FIXME, is this right?
     ab_len = law_sines(ac_len, basic.beta, basic.gamma)
     b = a.pointFrom(ab_len, basic.alpha)
-    vertices = [(a.x, a.y), (b.x, b.y), (c.x, c.y)]
+    vertices = [(a.x, a.y), (b.x, b.y), (c.x, c.y), (a.x, a.y)]
     return vertices
-
-def make_next_triangle(origin, c, basic):
-    a = point(origin[0], origin[1])
-    c = point(c[0], c[1])
-    ac_len = a.lengthTo(c)
-    angle_offset = atan_deg(origin, [c.x, c.y])
-    ab_len = law_sines(ac_len, basic.beta, basic.gamma)
-    b = a.pointFrom(ab_len, basic.alpha + angle_offset)
-    vertices = [(a.x, a.y), (b.x, b.y), (c.x, c.y)]
-    print("make next triangle")
-    print(vertices)
-    ac_len = a.lengthTo(c)
-    print(angle_offset,ac_len, ab_len)
-    return vertices, ac_len
-
 
 def make_plot(prefix='wp', show_plot=True, polygon_sides=3, rotation_rho=10, spirality_sigma=20, 
             N=10, glue_tab = False,
-            cut_tip = True, cut_bottom = True,
+            cut_tip = True, cut_bottom_func=None,
             angle_offsets = None):
 
     fig, ax = plt.subplots()
@@ -153,49 +147,55 @@ def make_plot(prefix='wp', show_plot=True, polygon_sides=3, rotation_rho=10, spi
         row_origin = [a.x, a.y]
         print(row_origin, ac_len)
         print(angle_offsets)
-    # end layers for
+    # end for each layer of triangles
 
-    if 1:
-        # make an outline for cutting, use cut_tip and cut_bottom to control it
-        cut_vertices = []
-        for r in rows: # start at 0,0 and go clockwise, adding each A point in the column
-            cut_vertices.append(r[0].vertices[0])
-        if cut_tip:
-            path = rows[-1][0]
-            pta = path.vertices[0] 
-            ptb = path.vertices[1] 
-            ab_mid = (pta + ptb)/2.0
-            rot = mpl.transforms.Affine2D().rotate_deg_around(ab_mid[0], ab_mid[1], 180.0) 
-            v = path.transformed(rot).vertices[-1]
-            cut_vertices.append(v)  
+    # make an outline for cutting, use cut_tip and cut_bottom to control it
+    cut_vertices = []
+    for r in rows: # start at 0,0 and go clockwise, adding each A point in the column
+        cut_vertices.append(r[0].vertices[0])
+    if cut_tip:
+        path = rows[-1][0]
+        pta = path.vertices[0] 
+        ptb = path.vertices[1] 
+        ab_mid = (pta + ptb)/2.0
+        rot = mpl.transforms.Affine2D().rotate_deg_around(ab_mid[0], ab_mid[1], 180.0) 
+        v = path.transformed(rot).vertices[2]
+        cut_vertices.append(v)  
 
-            for n in range(polygon_sides): # add B points of the top (smallest) row
-                cut_vertices.append(rows[-1][n].vertices[1])
-        # else calculate the meeting point and use that
-        for i in range(len(rows)): # back down the column using the C points on this side
-            cut_vertices.append(rows[-(i+1)][-1].vertices[2])
-        if cut_bottom: 
-            for n in range(polygon_sides): # along the wide bottom until back to start
-                cut_vertices.append(rows[0][-(n+1)].vertices[0])
-        cut_path = Path(cut_vertices)
-        patch = patches.PathPatch(cut_path, facecolor='1.0', edgecolor='k')
-        ax.add_patch(patch)
+        for n in range(polygon_sides): # add B points of the top (smallest) row
+            cut_vertices.append(rows[-1][n].vertices[1])
+    
+    # else calculate the meeting point and use that
+        # Fixme: add that
+        # calculate the tip point, rho angle and then isoceles triangle
+        # will need the vertical scores to tip point, ok to aappend a row to rows
+        # add tip point to cut_vertices
+        # add B point of the last triangle rows[-1][-1]
+    
+    for i in range(N): # back down the column using the C points on this side
+        cut_vertices.append(rows[-(i+1)][-1].vertices[2])
+    if cut_bottom_func is None:
+        for n in range(polygon_sides): # along the wide bottom until back to start
+            cut_vertices.append(rows[0][-(n+1)].vertices[0])
+    cut_path = Path(cut_vertices)
+    patch = patches.PathPatch(cut_path, facecolor='k', alpha=0.05, edgecolor='k')
+    ax.add_patch(patch)
 
-        for r in rows:
-            for n in range(polygon_sides):               
-                patch = patches.PathPatch(r[n], facecolor=color[n], edgecolor='k')
-                ax.add_patch(patch)
+    # add all the trangles to the plot
+    for r in rows:
+        for n in range(polygon_sides):               
+            patch = patches.PathPatch(r[n], facecolor=color[n], alpha=0.75, edgecolor='k')
+            ax.add_patch(patch)
 
 
-
-    ax.grid('off')
-    ax.set_aspect(1), 
-    ax.autoscale()
+    plt.axis('off')
+    plt.box(False)
+    ax.set_aspect(1), ax.autoscale()
     plt.savefig(name + ".svg")
     if show_plot: plt.title(name), plt.show()
 
 
-make_plot(prefix='wp', show_plot=True, polygon_sides=3, 
-            rotation_rho=10, spirality_sigma=20, 
-            N=12, glue_tab = False,
+make_plot(prefix='wp', show_plot=True, polygon_sides=4, 
+            rotation_rho=20, spirality_sigma=40, 
+            N=8, glue_tab = False,
             cut_tip = True, angle_offsets = None)
