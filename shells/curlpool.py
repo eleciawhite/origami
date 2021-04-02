@@ -1,11 +1,14 @@
 # Generate a whirlpool (or screw shell) from triangles
-# This method is based in the one decribed in Spirals 
-# by Tomoko Fuse for Whirlpool Spirals.
+# This method is based on the in the one decribed in Spirals 
+# by Tomoko Fuse for Whirlpool Spirals but I've added curves
+# to get a more flowing appearance (less step-like). 
+# See ../spirals/whirlpool.py for a more true-to-the-book version.
 
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.path import Path
+import matplotlib.path as mplpath
 import matplotlib as mpl
 from math import *
 
@@ -22,10 +25,15 @@ class wp_angles:
         self.alpha = 0
         self.gamma = 0
 
-class point:
+class Point:
     def __init__(self, x, y):
         self.x = x
         self.y = y
+
+    @classmethod
+    def fromVertices(cls, v):
+        ret = cls(v[0],v[1])
+        return ret
 
     def lengthTo(self, p):
         x2 = (self.x-p.x)**2
@@ -36,12 +44,12 @@ class point:
         return [self.x, self.y]
         
     def negative(self):
-        return point(self.x, -self.y)
+        return Point(self.x, -self.y)
     
     def pointFrom(self, length, angle):
         x = self.x + length*sin(radians(angle))
         y = self.y + length*cos(radians(angle))
-        return point(x, y)
+        return Point(x, y)
 
 def atan_deg(pt1, pt2):
     x = pt2[0] - pt1[0]
@@ -58,14 +66,73 @@ def update_angle_offset(angle_offset, rho):
         if angle_offset[i] > 0.0001: # epsilon
             angle_offset[i] = rho
     return angle_offset
-       
+
+class CurvedTriangle(mplpath.Path):
+    # CurvedTriangle class encapsulates the mpl.Path class 
+    # so we can still use vertices as the triangle endpoints
+    # while also having curved legs
+    def __init__(self, vertices, curve=0):
+        self.curve = curve
+        self.setPointsFromTriangleVertices(vertices)
+        if (curve == 0):
+            path_vertices = vertices
+            path_codes = [
+                Path.MOVETO,
+                Path.LINETO,
+                Path.LINETO,
+                Path.LINETO          
+            ] 
+        else:
+            path_codes = [
+                Path.MOVETO,
+                Path.LINETO,
+                Path.LINETO,
+                Path.LINETO           
+            ] # FIXME: Still straight
+            path_vertices = [
+                vertices[0], # A
+                vertices[1], # B
+                vertices[2], # C
+                vertices[0], # A (back to)   
+            ]
+        super().__init__(vertices = path_vertices,
+                            codes = path_codes)
+
+    @classmethod
+    def fromPath(cls, path):
+        obj = cls.__new__(cls) # does not call __init__
+        super(CurvedTriangle,obj).__init__(vertices = path._vertices,
+                            codes = path._codes)
+        obj.curve = None
+        triangle_vertices = obj.getTriangleVertices()
+        obj.setPointsFromTriangleVertices(triangle_vertices)
+        return obj
+
+    def getTriangleVertices(self):
+        vertices = self._vertices
+        codes = self._codes
+        triangle_vertices = []
+        for i, code in enumerate(codes):
+            if code == Path.MOVETO or code == Path.LINETO:
+                triangle_vertices.append(vertices[i])
+        return triangle_vertices
+
+    def setPointsFromTriangleVertices(self, vertices):
+        self.pt_a = Point.fromVertices(vertices[0])
+        self.pt_b = Point.fromVertices(vertices[1])
+        self.pt_c = Point.fromVertices(vertices[2])
+
+    def transformed(self, xform):
+        xform_path = super().transformed(xform) 
+        return CurvedTriangle.fromPath(xform_path)    
+
 def make_basic_triangle_path(origin, ac_len, basic):
-    a = point(origin[0], origin[1])
-    c = a.pointFrom(ac_len, 0.0)  # FIXME, is this right?
+    a = origin
+    c = a.pointFrom(ac_len, 0.0)  
     ab_len = law_sines(ac_len, basic.beta, basic.gamma)
     b = a.pointFrom(ab_len, basic.alpha)
     vertices = [(a.x, a.y), (b.x, b.y), (c.x, c.y), (a.x, a.y)]
-    path = Path(vertices)
+    path = CurvedTriangle(vertices)
     return path
 
 def make_plot(prefix='wp', show_plot=True, polygon_sides=3, rotation_rho=10, spirality_sigma=20, 
@@ -97,7 +164,7 @@ def make_plot(prefix='wp', show_plot=True, polygon_sides=3, rotation_rho=10, spi
         angle_offsets = [rotation_rho*x  for x in list(range(polygon_sides))]
     
     ac_len = 10.0
-    row_origin = [0.0, 0.0]
+    row_origin = Point(0.0, 0.0)
     rows = []
     triangles = []
     for layer in range(N):
@@ -110,7 +177,7 @@ def make_plot(prefix='wp', show_plot=True, polygon_sides=3, rotation_rho=10, spi
 
         for n in range(polygon_sides):
             r = mpl.transforms.Affine2D().rotate_deg_around(
-                path.vertices[0][0], path.vertices[0][1], 
+                path.pt_a.x, path.pt_a.y, 
                 -angle_offsets[n])
             path = path.transformed(r)
                 
@@ -120,7 +187,7 @@ def make_plot(prefix='wp', show_plot=True, polygon_sides=3, rotation_rho=10, spi
             print(color[n])
             print(path)
 
-            path = make_basic_triangle_path(origin = path.vertices[2], ac_len=ac_len, basic=basic)  
+            path = make_basic_triangle_path(origin = path.pt_c, ac_len = ac_len, basic = basic)  
 
         # end poly for
         rows.append(row) # big matrix of paths so we can make a cut path
@@ -131,11 +198,11 @@ def make_plot(prefix='wp', show_plot=True, polygon_sides=3, rotation_rho=10, spi
 
         for n in range(polygon_sides):
             angle_offsets[n] = original_angle_offsets[n] + angoff
-        b = point(row[0].vertices[1][0],row[0].vertices[1][1])
+        b = Point(row[0].vertices[1][0],row[0].vertices[1][1])
         a = b.pointFrom(-ac_len, angoff)
 
-        row_origin = [a.x, a.y]
-        print(row_origin, ac_len)
+        row_origin = Point(a.x, a.y)
+        print(row_origin.x, row_origin.y, ac_len)
         print(angle_offsets)
     # end for each layer of triangles
 
