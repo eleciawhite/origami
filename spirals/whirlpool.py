@@ -1,5 +1,5 @@
 # Generate a whirlpool (or screw shell) from triangles
-# This method is based in the one decribed in Spirals 
+# This method is based in the one described in Spirals 
 # by Tomoko Fuse for Whirlpool Spirals.
 
 import numpy as np
@@ -61,7 +61,7 @@ def update_angle_offset(angle_offset, rho):
        
 def make_basic_triangle_path(origin, ac_len, basic):
     a = point(origin[0], origin[1])
-    c = a.pointFrom(ac_len, 0.0)  # FIXME, is this right?
+    c = a.pointFrom(ac_len, 0.0) 
     ab_len = law_sines(ac_len, basic.beta, basic.gamma)
     b = a.pointFrom(ab_len, basic.alpha)
     vertices = [(a.x, a.y), (b.x, b.y), (c.x, c.y), (a.x, a.y)]
