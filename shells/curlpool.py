@@ -86,24 +86,27 @@ class CurvedTriangle(mplpath.Path):
             ] 
         else:
             path_codes = [
-                Path.MOVETO,
+                Path.MOVETO, # A
                 Path.CURVE3, # Draw a quadratic Bezier curve from the current position, with the given control point, to the given end point.
+                Path.CURVE3, # B endpoint
+                Path.CURVE4, # C Control point for Bezier
+                Path.CURVE4, # C2 Control point for Bezier                
                 Path.CURVE3, # endpoint
-                Path.LINETO,
-                Path.LINETO           
             ] 
  
             #controlpoint is in the direction of C
             midpoint_ab = self.pt_a.midpoint(self.pt_b)
-            controlpoint = midpoint_ab.meetpoint(self.pt_c, curve).pts()
+            controlpoint_ab = midpoint_ab.meetpoint(self.pt_c, curve).pts()
+            controlpoint_acb = self.pt_c.pts() #midpoint_ab.meetpoint(self.pt_c, 0.5).pts()
 
             print(vertices[0], vertices[1])
-            print(midpoint_ab.pts(), controlpoint)
+            print(midpoint_ab.pts(), controlpoint_ab)
             path_vertices = [
                 vertices[0], # A
-                controlpoint,# Control point
+                controlpoint_ab,# Control point
                 vertices[1], # B
                 vertices[2], # C
+                controlpoint_acb, # C
                 vertices[0], # A (back to)   
             ]
         super(CurvedTriangle, self).__init__(vertices = path_vertices,
@@ -120,6 +123,11 @@ class CurvedTriangle(mplpath.Path):
         return obj
 
     def getTriangleVertices(self):
+        v = self._vertices
+        triangle_vertices = [v[0], v[2], v[3]]
+        return triangle_vertices
+
+    def getTriangleVerticesBySearching(self):
         vertices = self._vertices
         codes = self._codes
         triangle_vertices = []
@@ -192,8 +200,6 @@ def make_plot(prefix='wp', show_plot=True,
     basic.gamma = 180.0 - basic.alpha - basic.beta
     print(basic.alpha, basic.beta, basic.gamma)
 
-    #FIXME: Check validity
-
     # standard whirlpool
     if angle_offsets is None:
         original_angle_offsets = [rotation_rho*x  for x in list(range(polygon_sides))]
@@ -217,7 +223,6 @@ def make_plot(prefix='wp', show_plot=True,
                 -angle_offsets[n])
             path = path.transformed(r)
                 
-
             # put triangle in position at the angle_offset and position
             row.append(path)
             print(color[n])
@@ -298,8 +303,8 @@ def make_plot(prefix='wp', show_plot=True,
     if show_plot: plt.title(name), plt.show()
 
 
-make_plot(prefix='strcp', show_plot=True, polygon_sides=3, 
+make_plot(prefix='cp2', show_plot=True, polygon_sides=3, 
             rotation_rho=20, spirality_sigma=20, 
-            N=6, curve = 0.8,
+            N=6, curve = 0.5,
             glue_tab = False,
             cut_tip = False, angle_offsets = None)
