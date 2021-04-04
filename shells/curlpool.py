@@ -41,8 +41,11 @@ class Point:
         return sqrt(x2 + y2)
 
     def midpoint(self, p):
-        x = (self.x + p.x)/2.0
-        y = (self.y + p.y)/2.0
+        return self.meetpoint(p, 0.5)
+        
+    def meetpoint(self, p, ratio):
+        x = (self.x * ratio) + p.x * (1.0-ratio)
+        y = (self.y * ratio) + p.y * (1.0-ratio)
         return Point(x, y)
 
     def pts(self):
@@ -70,7 +73,7 @@ class CurvedTriangle(mplpath.Path):
     # CurvedTriangle class encapsulates the mpl.Path class 
     # so we can still use vertices as the triangle endpoints
     # while also having curved legs
-    def __init__(self, vertices, curve=0):
+    def __init__(self, vertices, curve=1.0):
         self.curve = curve
         self.setPointsFromTriangleVertices(vertices)
         if (curve == 0):
@@ -85,20 +88,14 @@ class CurvedTriangle(mplpath.Path):
             path_codes = [
                 Path.MOVETO,
                 Path.CURVE3, # Draw a quadratic Bezier curve from the current position, with the given control point, to the given end point.
-                Path.CURVE3, # Draw a quadratic Bezier curve from the current position, with the given control point, to the given end point.
-#                Path.LINETO,
+                Path.CURVE3, # endpoint
                 Path.LINETO,
                 Path.LINETO           
-            ] # FIXME: Still straight
+            ] 
  
-            #controlpoint needs to be in the direction of C but how much
-            divisor = 2.0 *curve
+            #controlpoint is in the direction of C
             midpoint_ab = self.pt_a.midpoint(self.pt_b)
-
-#            controlpoint = self.pt_c.midpoint(midpoint_ab).pts() 
-            x = (midpoint_ab.x + self.pt_c.x)/divisor
-            y = (midpoint_ab.y + self.pt_c.y)/divisor
-            controlpoint = [x, y]
+            controlpoint = midpoint_ab.meetpoint(self.pt_c, curve).pts()
 
             print(vertices[0], vertices[1])
             print(midpoint_ab.pts(), controlpoint)
@@ -109,7 +106,7 @@ class CurvedTriangle(mplpath.Path):
                 vertices[2], # C
                 vertices[0], # A (back to)   
             ]
-        super().__init__(vertices = path_vertices,
+        super(CurvedTriangle, self).__init__(vertices = path_vertices,
                             codes = path_codes)
 
     @classmethod
@@ -145,7 +142,7 @@ class CurvedTriangle(mplpath.Path):
         self.pt_c = Point.fromVertices(vertices[2])
 
     def transformed(self, xform):
-        xform_path = super().transformed(xform) 
+        xform_path = super(CurvedTriangle, self).transformed(xform) 
         return CurvedTriangle.fromPath(xform_path)    
 
     def printTriangleVertices(self):
@@ -173,6 +170,16 @@ def make_plot(prefix='wp', show_plot=True,
         polygon_sides, int(rotation_rho), int(spirality_sigma), 
         int(curve*100), N)
     
+    # Check variable validity
+    max_rho = 180.0 / polygon_sides
+    max_sigma = 90.0 - max_rho
+    if not (0.0 <= rotation_rho and rotation_rho <= max_rho):
+        print(name + ": rotation_rho out of range")
+        return
+    if not (0.0 <= spirality_sigma and spirality_sigma <= max_sigma):
+        print(name + ": spirality_sigma out of range")
+        return
+        
     exterior_base = 90.0 + rotation_rho/2.0       
     poly = wp_angles()
     poly.beta = 360.0/polygon_sides
@@ -247,13 +254,23 @@ def make_plot(prefix='wp', show_plot=True,
 
         for n in range(polygon_sides): # add B points of the top (smallest) row
             cut_vertices.append(rows[-1][n].pt_b.pts())
-    
-    # else calculate the meeting point and use that
-        # Fixme: add that
-        # calculate the tip point, rho angle and then isoceles triangle
-        # will need the vertical scores to tip point, ok to aappend a row to rows
-        # add tip point to cut_vertices
-        # add B point of the last triangle rows[-1][-1]
+    else: # determine the tip point then set up scores 
+        # triangle to tip is QRS, with the tip at Q, with an angle 
+        # of rho (rotation_rho) and an isoceles triangle where
+        # R and S are two adjacent row Bs.      
+        rs_dist = rows[-1][0].pt_b.lengthTo(rows[-1][1].pt_b)
+        r_ang = (180.0 - rotation_rho) / 2.0 # isoceles
+        qr_dist = law_sines(rs_dist, rotation_rho, r_ang)
+        angoff = atan_deg(rows[-1][0].pt_b.pts(), rows[-1][1].pt_b.pts())
+        pt_q = rows[-1][0].pt_b.pointFrom(qr_dist, r_ang + angoff)      
+        ax.plot(pt_q.x, pt_q.y, 'rx')
+        cut_vertices.append(pt_q.pts())
+        cut_vertices.append(rows[-1][-1].pt_b.pts())
+        row = []
+        for n in range(polygon_sides-1): # add B to tip
+            x = [rows[-1][n].pt_b.x, pt_q.x]          
+            y = [rows[-1][n].pt_b.y, pt_q.y]           
+            ax.plot(x, y, 'k')
     
     for i in range(N): # back down the column using the C points on this side
         cut_vertices.append(rows[-(i+1)][-1].pt_c.pts())
@@ -265,9 +282,9 @@ def make_plot(prefix='wp', show_plot=True,
     ax.add_patch(patch)
 
     # add all the trangles to the plot
-    for r in rows:
-        for n in range(polygon_sides):               
-            patch = patches.PathPatch(r[n], facecolor=color[n], alpha=0.75, edgecolor='k')
+    for row in rows:
+        for i, r in enumerate(row):        
+            patch = patches.PathPatch(r, facecolor=color[i], alpha=0.75, edgecolor='k')
             ax.add_patch(patch)
 
     plt.axis('off')
@@ -277,8 +294,8 @@ def make_plot(prefix='wp', show_plot=True,
     if show_plot: plt.title(name), plt.show()
 
 
-make_plot(prefix='wp', show_plot=True, polygon_sides=4, 
-            rotation_rho=20, spirality_sigma=40, 
-            N=3, curve = 0.95,
+make_plot(prefix='strcp', show_plot=True, polygon_sides=3, 
+            rotation_rho=20, spirality_sigma=20, 
+            N=6, curve = 0.8,
             glue_tab = False,
-            cut_tip = True, angle_offsets = None)
+            cut_tip = False, angle_offsets = None)
