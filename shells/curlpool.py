@@ -246,12 +246,11 @@ def make_plot(prefix='wp', show_plot=True,
     cut_vertices = []
     for r in rows: # start at 0,0 and go clockwise, adding each A point in the column
         cut_vertices.append(r[0].pt_a.pts())
-    if cut_tip:
-        path = rows[-1][0]
-        ab_mid = path.pt_a.midpoint(path.pt_b)
-        rot = mpl.transforms.Affine2D().rotate_deg_around(ab_mid.x, ab_mid.y, 180.0) 
-        cut_vertices.append(path.transformed(rot).pt_c.pts())  
 
+    c0 = row_origin
+    cut_vertices.append(c0.pts())  
+
+    if cut_tip:
         for n in range(polygon_sides): # add B points of the top (smallest) row
             cut_vertices.append(rows[-1][n].pt_b.pts())
     else: # determine the tip point then set up scores 
@@ -263,15 +262,20 @@ def make_plot(prefix='wp', show_plot=True,
         qr_dist = law_sines(rs_dist, rotation_rho, r_ang)
         angoff = atan_deg(rows[-1][0].pt_b.pts(), rows[-1][1].pt_b.pts())
         pt_q = rows[-1][0].pt_b.pointFrom(qr_dist, r_ang + angoff)      
-        ax.plot(pt_q.x, pt_q.y, 'rx')
         cut_vertices.append(pt_q.pts())
         cut_vertices.append(rows[-1][-1].pt_b.pts())
         row = []
-        for n in range(polygon_sides-1): # add B to tip
-            x = [rows[-1][n].pt_b.x, pt_q.x]          
-            y = [rows[-1][n].pt_b.y, pt_q.y]           
+        for n in range(polygon_sides-1): # add B to tip and B to B
+            x = [rows[-1][n+1].pt_b.x, rows[-1][n].pt_b.x, pt_q.x]
+            y = [ rows[-1][n+1].pt_b.y, rows[-1][n].pt_b.y, pt_q.y]
             ax.plot(x, y, 'k')
-    
+
+        # also make line from first B to edge
+        x = [rows[-1][0].pt_b.x, c0.x]
+        y = [ rows[-1][0].pt_b.y, c0.y]
+        ax.plot(x, y, 'k')
+
+
     for i in range(N): # back down the column using the C points on this side
         cut_vertices.append(rows[-(i+1)][-1].pt_c.pts())
     if cut_bottom_func is None:
