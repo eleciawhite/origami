@@ -73,10 +73,11 @@ class CurvedTriangle(mplpath.Path):
     # CurvedTriangle class encapsulates the mpl.Path class 
     # so we can still use vertices as the triangle endpoints
     # while also having curved legs
-    def __init__(self, vertices, curve=1.0):
+    def __init__(self, vertices, curve=0, acb_straight=False):
         self.curve = curve
         self.setPointsFromTriangleVertices(vertices)
-        if (curve == 0):
+        self.acb_straight = acb_straight
+        if (curve==0):
             path_vertices = vertices
             path_codes = [
                 Path.MOVETO,
@@ -84,7 +85,29 @@ class CurvedTriangle(mplpath.Path):
                 Path.LINETO,
                 Path.LINETO          
             ] 
-        else:
+        elif (acb_straight):
+            path_codes = [
+                Path.MOVETO, # A
+                Path.CURVE3, # Draw a quadratic Bezier curve from the current position, with the given control point, to the given end point.
+                Path.CURVE3, # B endpoint
+                Path.LINETO, # C
+                Path.LINETO # A
+            ] 
+ 
+            #controlpoint is in the direction of C
+            midpoint_ab = self.pt_a.midpoint(self.pt_b)
+            controlpoint_ab = midpoint_ab.meetpoint(self.pt_c, curve).pts()
+            controlpoint_acb = self.pt_c.pts() 
+
+            path_vertices = [
+                vertices[0], # A
+                controlpoint_ab,# Control point
+                vertices[1], # B
+                vertices[2], # C
+                vertices[0], # A (back to)   
+            ]
+            
+        else: # acb is curved as well
             path_codes = [
                 Path.MOVETO, # A
                 Path.CURVE3, # Draw a quadratic Bezier curve from the current position, with the given control point, to the given end point.
@@ -97,10 +120,8 @@ class CurvedTriangle(mplpath.Path):
             #controlpoint is in the direction of C
             midpoint_ab = self.pt_a.midpoint(self.pt_b)
             controlpoint_ab = midpoint_ab.meetpoint(self.pt_c, curve).pts()
-            controlpoint_acb = self.pt_c.pts() #midpoint_ab.meetpoint(self.pt_c, 0.5).pts()
+            controlpoint_acb = self.pt_c.pts() 
 
-            print(vertices[0], vertices[1])
-            print(midpoint_ab.pts(), controlpoint_ab)
             path_vertices = [
                 vertices[0], # A
                 controlpoint_ab,# Control point
@@ -124,7 +145,10 @@ class CurvedTriangle(mplpath.Path):
 
     def getTriangleVertices(self):
         v = self._vertices
-        triangle_vertices = [v[0], v[2], v[3]]
+        if self.curve == 0:
+            triangle_vertices = [v[0], v[1], v[2]]     
+        else: # wether acb_straight is true or not:
+            triangle_vertices = [v[0], v[2], v[3]]
         return triangle_vertices
 
     def getTriangleVerticesBySearching(self):
@@ -303,8 +327,8 @@ def make_plot(prefix='wp', show_plot=True,
     if show_plot: plt.title(name), plt.show()
 
 
-make_plot(prefix='cp2', show_plot=True, polygon_sides=3, 
-            rotation_rho=20, spirality_sigma=20, 
-            N=6, curve = 0.5,
+make_plot(prefix='cp6', show_plot=True, polygon_sides=4, 
+            rotation_rho=15, spirality_sigma=30, 
+            N=6, curve=1.25,
             glue_tab = False,
             cut_tip = False, angle_offsets = None)
