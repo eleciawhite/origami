@@ -1,5 +1,5 @@
 # origami
-Origami patterns I've developed (with links to other patterns). All pictures are of things I have folded with notes in a readme and filename if it wasn't of my design.
+Origami patterns I've developed (with links to other patterns). All pictures are of things I have folded with notes in a readme and filename if it wasn't of my design. Octopus is probably the place to start with something simple. Shells is has some reasonably simple folds but few instructions. Shells and Spirals both have Python scripts to generate different forms. Spirals generate patterns from Tomoko Fuse's Spirals book.
 
 # Additional resources
 
