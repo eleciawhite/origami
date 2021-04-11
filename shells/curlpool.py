@@ -62,18 +62,27 @@ class Point:
 def atan_deg(pt1, pt2):
     x = pt2[0] - pt1[0]
     y = pt2[1] - pt1[1]
-    print("atan %f %f => %f"%(x, y, degrees(atan2(x,y))))
     return degrees(atan2(x,y))
 
 def law_sines(length, ang_denom, ang_mult):
     val = length*sin(radians(ang_mult)) / sin(radians(ang_denom))
     return abs(val)
 
+class StraightPath(mplpath.Path): # This is just so I can access these with a and c like I do with CurvedTriangle rows.
+    def __init__(self, pt_a, pt_c):
+        self.pt_a = pt_a
+        self.pt_c = pt_c
+        path_codes = [Path.MOVETO, Path.LINETO]
+        path_vertices = [pt_a.pts(), pt_c.pts()]
+        super(StraightPath, self).__init__(vertices = path_vertices,
+                            codes = path_codes)
+
+
 class CurvedTriangle(mplpath.Path):
     # CurvedTriangle class encapsulates the mpl.Path class 
     # so we can still use vertices as the triangle endpoints
     # while also having curved legs
-    def __init__(self, vertices, curve=0, acb_straight=False):
+    def __init__(self, vertices, curve=0, acb_straight=True):
         self.curve = curve
         self.setPointsFromTriangleVertices(vertices)
         self.acb_straight = acb_straight
@@ -191,6 +200,32 @@ def make_basic_triangle_path(origin, ac_len, basic, curve):
     path = CurvedTriangle(vertices, curve)
     return path
 
+def longer_bottom(rows, length):
+    newrow = []
+    cuts = []
+    for i, triangle in enumerate(rows[0]):
+        angle =  atan_deg(rows[1][i].pt_a.pts(), triangle.pt_a.pts())
+        newPoint = triangle.pt_a.pointFrom(length, angle)
+
+        if i != 0:
+            newpath = StraightPath(triangle.pt_a, newPoint)
+            newrow.append(newpath)
+            m2 = newPoint.midpoint(prevPoint)
+            newrow.append(StraightPath(m1, m2))
+        cuts.append(newPoint.pts())
+        prevPoint = newPoint
+        m1 = triangle.pt_a.midpoint(triangle.pt_c)
+
+    # add the last one point and midline
+    angle =  atan_deg(triangle.pt_b.pts(), triangle.pt_c.pts())
+    newPoint = triangle.pt_c.pointFrom(length, angle)
+    cuts.append(newPoint.pts())
+    m2 = newPoint.midpoint(prevPoint)
+    newrow.append(StraightPath(m1, m2))
+
+    return newrow, cuts
+
+
 def make_plot(prefix='wp', show_plot=True, 
             polygon_sides=3, rotation_rho=10, spirality_sigma=20, 
             N=10, curve = 0, glue_tab = False,
@@ -222,7 +257,6 @@ def make_plot(prefix='wp', show_plot=True,
     basic.beta = exterior_base - poly.alpha
     basic.alpha = spirality_sigma
     basic.gamma = 180.0 - basic.alpha - basic.beta
-    print(basic.alpha, basic.beta, basic.gamma)
 
     # standard whirlpool
     if angle_offsets is None:
@@ -236,8 +270,6 @@ def make_plot(prefix='wp', show_plot=True,
     for layer in range(N):
         # create a basic triangle of ac_len with angles given
         path = make_basic_triangle_path(row_origin, ac_len, basic, curve)       
-        path.printTriangleVertices()
-        color = ["red", "green", "blue", "orange", "yellow", "cyan"]
         start = row_origin
         row = []
 
@@ -249,9 +281,6 @@ def make_plot(prefix='wp', show_plot=True,
                 
             # put triangle in position at the angle_offset and position
             row.append(path)
-            print(color[n])
-            print(path)
-            path.printTriangleVertices()
 
             path = make_basic_triangle_path(origin = path.pt_c, ac_len = ac_len, basic = basic, curve = curve)  
 
@@ -267,8 +296,6 @@ def make_plot(prefix='wp', show_plot=True,
         a = row[0].pt_b.pointFrom(-ac_len, angoff)
 
         row_origin = Point(a.x, a.y)
-        print(row_origin.x, row_origin.y, ac_len)
-        print(angle_offsets)
     # end for each layer of triangles
 
     # make an outline for cutting, use cut_tip and cut_bottom to control it
@@ -307,9 +334,16 @@ def make_plot(prefix='wp', show_plot=True,
 
     for i in range(N): # back down the column using the C points on this side
         cut_vertices.append(rows[-(i+1)][-1].pt_c.pts())
+
     if cut_bottom_func is None:
         for n in range(polygon_sides): # along the wide bottom until back to start
             cut_vertices.append(rows[0][-(n+1)].pt_a.pts())
+    else:
+        row_path_scores, new_cut_verts = cut_bottom_func(rows[0:2], rows[0][0].pt_a.lengthTo(rows[-1][0].pt_a))
+        new_cut_verts.reverse()
+        cut_vertices.extend(new_cut_verts)
+        rows.insert(0, row_path_scores)
+
     cut_path = Path(cut_vertices)
     patch = patches.PathPatch(cut_path, facecolor='k', alpha=0.05, edgecolor='k')
     ax.add_patch(patch)
@@ -317,7 +351,7 @@ def make_plot(prefix='wp', show_plot=True,
     # add all the trangles to the plot
     for row in rows:
         for i, r in enumerate(row):        
-            patch = patches.PathPatch(r, facecolor=color[i], alpha=0.75, edgecolor='k')
+            patch = patches.PathPatch(r, alpha=0.75, edgecolor='k')
             ax.add_patch(patch)
 
     plt.axis('off')
@@ -326,9 +360,10 @@ def make_plot(prefix='wp', show_plot=True,
     plt.savefig(name + ".svg")
     if show_plot: plt.title(name), plt.show()
 
-
 make_plot(prefix='cp6', show_plot=True, polygon_sides=4, 
             rotation_rho=15, spirality_sigma=30, 
-            N=6, curve=1.25,
+            N=6, curve=1, cut_bottom_func=longer_bottom,
             glue_tab = False,
             cut_tip = False, angle_offsets = None)
+
+#import pdb; pdb.set_trace()
