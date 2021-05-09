@@ -11,6 +11,7 @@ from matplotlib.path import Path
 import matplotlib.path as mplpath
 import matplotlib as mpl
 from math import *
+import logging
 
 import copy
 
@@ -156,7 +157,7 @@ class CurvedTriangle(mplpath.Path):
         v = self._vertices
         if self.curve == 0:
             triangle_vertices = [v[0], v[1], v[2]]     
-        else: # wether acb_straight is true or not:
+        else: # whether acb_straight is true or not:
             triangle_vertices = [v[0], v[2], v[3]]
         return triangle_vertices
 
@@ -187,7 +188,7 @@ class CurvedTriangle(mplpath.Path):
         return CurvedTriangle.fromPath(xform_path)    
 
     def printTriangleVertices(self):
-        print("a {:2.2f} {:2.2f} b {:2.2f} {:2.2f} c {:2.2f} {:2.2f}".format(
+        logging.info("a {:2.2f} {:2.2f} b {:2.2f} {:2.2f} c {:2.2f} {:2.2f}".format(
             self.pt_a.x, self.pt_a.y, self.pt_b.x, self.pt_b.y,
             self.pt_c.x, self.pt_c.y))
 
@@ -225,26 +226,41 @@ def longer_bottom(rows, length):
 
     return newrow, cuts
 
+def put_plot_on_fig(ax, rows, cut_vertices, cutline_path):
+    cut_path = Path(cut_vertices)
+    patch = patches.PathPatch(cut_path, facecolor='k', alpha=0.05, edgecolor='k')
+    ax.add_patch(patch)
+    patch = patches.PathPatch(cutline_path, alpha=0.75, edgecolor='k')
+    ax.add_patch(patch)
+
+    # add all the trangles to the plot
+    for row in rows:
+        for i, r in enumerate(row):        
+            patch = patches.PathPatch(r, alpha=0.75, edgecolor='k')
+            ax.add_patch(patch)
+    ax.set_aspect(1), ax.autoscale()
+
 
 def make_plot(prefix='wp', show_plot=True, 
             polygon_sides=3, rotation_rho=10, spirality_sigma=20, 
             N=10, curve = 0, glue_tab = False,
             cut_tip = True, cut_bottom_func=None,
-            angle_offsets = None):
+            plot_function=put_plot_on_fig):
 
     fig, ax = plt.subplots()
     name = '{}_poly{}_rho{}_sig{}_cur{}_N{}'.format(prefix,
         polygon_sides, int(rotation_rho), int(spirality_sigma), 
         int(curve*100), N)
+    logging.info(name)
     
     # Check variable validity
     max_rho = 180.0 / polygon_sides
     max_sigma = 90.0 - max_rho
     if not (0.0 <= rotation_rho and rotation_rho <= max_rho):
-        print(name + ": rotation_rho out of range")
+        logging.error(name + ": rotation_rho out of range")
         return
     if not (0.0 <= spirality_sigma and spirality_sigma <= max_sigma):
-        print(name + ": spirality_sigma out of range")
+        logging.error(name + ": spirality_sigma out of range")
         return
         
     exterior_base = 90.0 + rotation_rho/2.0       
@@ -258,10 +274,8 @@ def make_plot(prefix='wp', show_plot=True,
     basic.alpha = spirality_sigma
     basic.gamma = 180.0 - basic.alpha - basic.beta
 
-    # standard whirlpool
-    if angle_offsets is None:
-        original_angle_offsets = [rotation_rho*x  for x in list(range(polygon_sides))]
-        angle_offsets = [rotation_rho*x  for x in list(range(polygon_sides))]
+    original_angle_offsets = [rotation_rho*x  for x in list(range(polygon_sides))]
+    angle_offsets = [rotation_rho*x  for x in list(range(polygon_sides))]
     
     ac_len = 10.0
     row_origin = Point(0.0, 0.0)
@@ -320,17 +334,21 @@ def make_plot(prefix='wp', show_plot=True,
         pt_q = rows[-1][0].pt_b.pointFrom(qr_dist, r_ang + angoff)      
         cut_vertices.append(pt_q.pts())
         cut_vertices.append(rows[-1][-1].pt_b.pts())
-        row = []
-        for n in range(polygon_sides-1): # add B to tip and B to B
-            x = [rows[-1][n+1].pt_b.x, rows[-1][n].pt_b.x, pt_q.x]
-            y = [ rows[-1][n+1].pt_b.y, rows[-1][n].pt_b.y, pt_q.y]
-            ax.plot(x, y, 'k')
 
+        # score topline
+        vertices = [(c0.x,c0.y)]
+        codes = [ # front load codes
+            Path.MOVETO,
+        ]
+        for n in range(polygon_sides): # add B to tip and B to B
+            vertices.append((rows[-1][n].pt_b.x, rows[-1][n].pt_b.y))
+            codes.append(Path.LINETO)
+            vertices.append((pt_q.x, pt_q.y))
+            codes.append(Path.MOVETO)
+            vertices.append((rows[-1][n].pt_b.x, rows[-1][n].pt_b.y))
+            codes.append(Path.LINETO)
         # also make line from first B to edge
-        x = [rows[-1][0].pt_b.x, c0.x]
-        y = [ rows[-1][0].pt_b.y, c0.y]
-        ax.plot(x, y, 'k')
-
+        cutline_path = mplpath.Path(vertices=vertices, codes=codes)
 
     for i in range(N): # back down the column using the C points on this side
         cut_vertices.append(rows[-(i+1)][-1].pt_c.pts())
@@ -344,26 +362,85 @@ def make_plot(prefix='wp', show_plot=True,
         cut_vertices.extend(new_cut_verts)
         rows.insert(0, row_path_scores)
 
-    cut_path = Path(cut_vertices)
-    patch = patches.PathPatch(cut_path, facecolor='k', alpha=0.05, edgecolor='k')
-    ax.add_patch(patch)
-
-    # add all the trangles to the plot
-    for row in rows:
-        for i, r in enumerate(row):        
-            patch = patches.PathPatch(r, alpha=0.75, edgecolor='k')
-            ax.add_patch(patch)
-
+    plot_function(ax, rows, cut_vertices, cutline_path)
     plt.axis('off')
     plt.box(False)
-    ax.set_aspect(1), ax.autoscale()
     plt.savefig(name + ".svg")
     if show_plot: plt.title(name), plt.show()
 
-make_plot(prefix='cp6', show_plot=True, polygon_sides=4, 
-            rotation_rho=15, spirality_sigma=30, 
-            N=6, curve=1, cut_bottom_func=longer_bottom,
-            glue_tab = False,
-            cut_tip = False, angle_offsets = None)
+
+
+def put_curves_on_fig(ax, rows, cut_vertices, cutline_path, close_poly=False):
+    cut_path = Path(cut_vertices)
+    patch = patches.PathPatch(cut_path, facecolor='k', alpha=0.05, edgecolor='w')
+    ax.add_patch(patch)
+    # ignore cutline path
+
+    if close_poly:
+        last_code = Path.CLOSEPOLY
+    else:
+        last_code = Path.MOVETO
+
+    new_row = []
+    for row in rows:
+        if len(row) == 3:
+            path_codes = [
+                Path.MOVETO, # A
+                Path.CURVE4, # C Control point for Bezier
+                Path.CURVE4, # C2 Control point for Bezier                
+                Path.CURVE4, # C3 endpoint
+                last_code
+            ] 
+            path_vertices = [
+                row[0].pt_a.pts(),
+                row[0].pt_c.pts(),
+                row[1].pt_c.pts(),
+                row[2].pt_c.pts(),
+                row[0].pt_a.pts(),
+            ]
+            curve = mplpath.Path(vertices = path_vertices,
+                           codes = path_codes)
+            patch = patches.PathPatch(curve, alpha=0.5, edgecolor='k')
+            ax.add_patch(patch)
+
+        else:
+            logger.error("This polygon can't be an alicorn, try poly=3")
+            return
+
+        # now for top line
+        row = rows[-1]
+        path_codes = [
+            Path.MOVETO, # special
+            Path.CURVE4, # B Control point for Bezier
+            Path.CURVE4, # B2 Control point for Bezier                
+            Path.CURVE4, # B3 endpoint
+            last_code
+        ] 
+        path_vertices = [
+            cut_vertices[len(rows)],
+            row[0].pt_b.pts(),
+            row[1].pt_b.pts(),
+            row[2].pt_b.pts(),
+            cut_vertices[len(rows)],
+        ]
+        curve = mplpath.Path(vertices = path_vertices,
+                       codes = path_codes)
+        patch = patches.PathPatch(curve, alpha=0.5, edgecolor='k')
+        ax.add_patch(patch)
+    ax.set_aspect(1), ax.autoscale()
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+
+    make_plot(prefix='curopen', show_plot=True, polygon_sides=3, 
+                rotation_rho=10, spirality_sigma=30, 
+                N=8, curve=1.0, cut_bottom_func=None,
+                glue_tab = False,
+                cut_tip = False, plot_function=put_curves_on_fig)
+    make_plot(prefix='curopen', show_plot=True, polygon_sides=3, 
+                rotation_rho=10, spirality_sigma=20, 
+                N=6, curve=1.0, cut_bottom_func=None,
+                glue_tab = False,
+                cut_tip = False, plot_function=put_curves_on_fig)
 
 #import pdb; pdb.set_trace()
