@@ -1,6 +1,8 @@
+# See also https://colab.research.google.com/drive/1NZ3piVw5GSPSz7ywfhFOCfl28BkP25RV?usp=sharing
+# 
 # Generate a turbinated shell (which is to say conical, not in a plane 
 # like a planispiral shell). The Fuse method can be formed to be 
-# conical but you working against the paper. The goal here is for a 
+# conical but you are working against the paper. The goal here is for a 
 # natural 3d spiral, going all the way to scalariform (whorls not 
 # touching each other). And of course, curved folds so the paper 
 # creates a life-like shell.
@@ -22,7 +24,6 @@
 # terminology I'm using for the code depends heavily on the diagram. 
 # Look in the pics directory for a relevant diagram.
 #
-
 # sar < sal dextral
 # sal < sar sinistral
 # larger sa makes for a smaller protoconch, slower growth
@@ -77,7 +78,6 @@ def add_plot(paths, pt1, pt2, curve_fun, color):
 def bezier(paths, pt1, pt2, ptb, color):
     npoints = 2
     numbers = [i for i in range(npoints)]
-#    bezier_path = np.arange(0.0, 1.01, 0.01)
     bezier_path = np.arange(0.0, 1.01, 0.02)
 
     x1y1 = x1, y1 = pt1.x, pt1.y
@@ -125,7 +125,7 @@ def make_plot(prefix='tb', show_plot=True,
     
     figure, ax = plt.subplots()
     name = '{}_cal{}_car{}_sal{}_sar{}_N{}_add{}'.format(prefix, int(caL), int(caR), int(saL), int(saR), N, int(100*addAngle))
-
+    print(name)
     # angles from known 
     angBR = 90 + (caR)
     angBL = 90 + (caL)
@@ -257,8 +257,12 @@ add = 0.0
 name = 'snails_'
 
 #planispiral 
-make_plot(prefix=name+'planispiral', caL =25, caR = 25, saL=17, saR=17, u=1.0, N=25, curve_fun=ptb_sumxdiv095_avey, kite=3)
+#make_plot(prefix=name+'planispiral', caL =25, caR = 25, saL=17, saR=17, u=1.0, N=25, curve_fun=ptb_sumxdiv095_avey, kite=1)
 
-make_plot(prefix=name+'curvy', caL =0, caR = 15, saL=35, saR=25, u=1.0, N=20, curve_fun=ptb_sumxdiv095_avey, kite=1)
+make_plot(prefix=name+'straight', caL =25, caR = 25, saL=17, saR=17, u=1.0, N=10, curve_fun=ptb_straightline)
+make_plot(prefix=name+'straight', caL =25, caR = 25, saL=20, saR=14, u=1.0, N=10, curve_fun=ptb_straightline)
 
-make_plot(prefix=name+'tall', caL =0, caR = 15, saL=35, saR=25, u=1.0, N=20, curve_fun=ptb_sumxdiv0975_avey, kite=1)
+
+#make_plot(prefix=name+'curvy', caL =0, caR = 15, saL=35, saR=25, u=1.0, N=20, curve_fun=ptb_sumxdiv095_avey, kite=1)
+
+#make_plot(prefix=name+'tall', caL =0, caR = 15, saL=35, saR=25, u=1.0, N=20, curve_fun=ptb_sumxdiv0975_avey, kite=1)

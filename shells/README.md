@@ -1,3 +1,5 @@
+You can try out the Turbinator.py code [on a colab](https://colab.research.google.com/drive/1NZ3piVw5GSPSz7ywfhFOCfl28BkP25RV?usp=sharing).
+
 I sort of made a seashell by accident and then I wanted a intentional seashell. After a mistake or hundred, I finally got some shells I'm pleased with. I also made a Python script to generate different shells with different coiling and whorl rates.
 
 Let's start with easiest one to fold.
