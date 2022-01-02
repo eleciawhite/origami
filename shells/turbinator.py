@@ -37,39 +37,11 @@ from math import *
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import collections  as mc
-from matplotlib.patches import Ellipse, Wedge, Polygon
+from matplotlib.patches import  Polygon
 from matplotlib.path import Path
 import itertools
 
-class point:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-    def lengthTo(self, p):
-        x2 = (self.x-p.x)**2
-        y2 = (self.y-p.y)**2
-        len = sqrt(x2 + y2)
-        return len
-
-    def pts(self):
-        return [self.x, self.y]
-        
-    def negative(self):
-        return point(self.x, -self.y)
-    
-    def pointFrom(self, length, angle):
-        x = self.x + length*sin(radians(angle))
-        y = self.y + length*cos(radians(angle))
-        return point(x, y)
-        
-
-class side:
-    def __init__(self, pointA, pointB):
-        self.pointA = pointA
-        self.pointB = pointB
-    def length(self):
-        return self.pointA.lengthTo(self.pointB)
+from point import Point as point # local file
 
 def add_plot(paths, pt1, pt2, curve_fun, color):
     ptb = curve_fun(pt1, pt2)
@@ -250,19 +222,13 @@ def ptb_sumxdiv090_avey(pt1, pt2):
     yb = (pt1.y+pt2.y)/divisor
     return point(xb, yb)
 
+if __name__ == "__main__":
+    #import pdb; pdb.set_trace()
+    name = 'snails_'
+    #planispiral 
+    #make_plot(prefix=name+'planispiral', caL =25, caR = 25, saL=17, saR=17, u=1.0, N=25, curve_fun=ptb_sumxdiv095_avey, kite=1)
+    make_plot(prefix=name+'straight', caL =25, caR = 25, saL=17, saR=17, u=1.0, N=10, curve_fun=ptb_straightline)
+    make_plot(prefix=name+'straight', caL =25, caR = 25, saL=20, saR=14, u=1.0, N=10, curve_fun=ptb_straightline)
 
-#import pdb; pdb.set_trace()
-add = 0.0
-
-name = 'snails_'
-
-#planispiral 
-#make_plot(prefix=name+'planispiral', caL =25, caR = 25, saL=17, saR=17, u=1.0, N=25, curve_fun=ptb_sumxdiv095_avey, kite=1)
-
-make_plot(prefix=name+'straight', caL =25, caR = 25, saL=17, saR=17, u=1.0, N=10, curve_fun=ptb_straightline)
-make_plot(prefix=name+'straight', caL =25, caR = 25, saL=20, saR=14, u=1.0, N=10, curve_fun=ptb_straightline)
-
-
-#make_plot(prefix=name+'curvy', caL =0, caR = 15, saL=35, saR=25, u=1.0, N=20, curve_fun=ptb_sumxdiv095_avey, kite=1)
-
-#make_plot(prefix=name+'tall', caL =0, caR = 15, saL=35, saR=25, u=1.0, N=20, curve_fun=ptb_sumxdiv0975_avey, kite=1)
+    #make_plot(prefix=name+'curvy', caL =0, caR = 15, saL=35, saR=25, u=1.0, N=20, curve_fun=ptb_sumxdiv095_avey, kite=1)
+    #make_plot(prefix=name+'tall', caL =0, caR = 15, saL=35, saR=25, u=1.0, N=20, curve_fun=ptb_sumxdiv0975_avey, kite=1)

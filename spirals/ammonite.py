@@ -171,8 +171,8 @@ N  = 20  # number of iterations
 show_plot = True
 
 figure, ax = plt.subplots()
-name = 'fg24_ca30_sa12_N20'
-make_plot(ax, ca=30, sa=12, N=20, curve_fun=ptb_straightline)
+name = 'fg24_ca30_sa15_N20'
+make_plot(ax, ca=30, sa=15, N=20, curve_fun=ptb_straightline)
 plt.savefig(name + ".svg")
 if show_plot: plt.title(name), plt.show()
 

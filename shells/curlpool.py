@@ -12,8 +12,9 @@ import matplotlib.path as mplpath
 import matplotlib as mpl
 from math import *
 import logging
-
 import copy
+
+from point import Point # local file
 
 def distance(a, b):
     x2 = (a[0] - b[0])**2
@@ -26,39 +27,6 @@ class wp_angles:
         self.alpha = 0
         self.gamma = 0
 
-class Point:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-    @classmethod
-    def fromVertices(cls, v):
-        ret = cls(v[0],v[1])
-        return ret
-
-    def lengthTo(self, p):
-        x2 = (self.x-p.x)**2
-        y2 = (self.y-p.y)**2
-        return sqrt(x2 + y2)
-
-    def midpoint(self, p):
-        return self.meetpoint(p, 0.5)
-        
-    def meetpoint(self, p, ratio):
-        x = (self.x * ratio) + p.x * (1.0-ratio)
-        y = (self.y * ratio) + p.y * (1.0-ratio)
-        return Point(x, y)
-
-    def pts(self):
-        return [self.x, self.y]
-        
-    def negative(self):
-        return Point(self.x, -self.y)
-    
-    def pointFrom(self, length, angle):
-        x = self.x + length*sin(radians(angle))
-        y = self.y + length*cos(radians(angle))
-        return Point(x, y)
 
 def atan_deg(pt1, pt2):
     x = pt2[0] - pt1[0]
@@ -404,40 +372,20 @@ def put_curves_on_fig(ax, rows, cut_vertices, cutline_path, close_poly=False):
             ax.add_patch(patch)
 
         else:
-            logger.error("This polygon can't be an alicorn, try poly=3")
+            logging.error("This polygon can't be an alicorn, try poly=3")
             return
 
-        # now for top line
-        row = rows[-1]
-        path_codes = [
-            Path.MOVETO, # special
-            Path.CURVE4, # B Control point for Bezier
-            Path.CURVE4, # B2 Control point for Bezier                
-            Path.CURVE4, # B3 endpoint
-            last_code
-        ] 
-        path_vertices = [
-            cut_vertices[len(rows)],
-            row[0].pt_b.pts(),
-            row[1].pt_b.pts(),
-            row[2].pt_b.pts(),
-            cut_vertices[len(rows)],
-        ]
-        curve = mplpath.Path(vertices = path_vertices,
-                       codes = path_codes)
-        patch = patches.PathPatch(curve, alpha=0.5, edgecolor='k')
-        ax.add_patch(patch)
     ax.set_aspect(1), ax.autoscale()
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
-    make_plot(prefix='curopen', show_plot=True, polygon_sides=3, 
+    make_plot(prefix='curopen2', show_plot=True, polygon_sides=3, 
                 rotation_rho=10, spirality_sigma=30, 
                 N=8, curve=1.0, cut_bottom_func=None,
                 glue_tab = False,
-                cut_tip = False, plot_function=put_curves_on_fig)
-    make_plot(prefix='curopen', show_plot=True, polygon_sides=3, 
+                cut_tip = False) #, plot_function=put_curves_on_fig)
+    make_plot(prefix='curopen2', show_plot=True, polygon_sides=3, 
                 rotation_rho=10, spirality_sigma=20, 
                 N=6, curve=1.0, cut_bottom_func=None,
                 glue_tab = False,
