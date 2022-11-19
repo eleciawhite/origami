@@ -4,7 +4,10 @@ At this point, you'll have the peach colored octopus in the example image.
 
 ![Example image of several folded octopi](pics/octos_example.jpeg "Ignore the green one")
 
-This body should be folded dry and is easier to fold with a weightier paper (light cardstock 40lb or greater). Watercolor paper (130lb) is tough for shaping the arms but works well with some determination and makes for some nice decoration possibilities (pink and white octos in example image). I am a sucker for capillary action and using salt to mottle the watercolor effects. This can be folded with kami but it is tough to do neatly (see purple octos in image). Though the kami is nice because you can blow up the octopus like a waterbomb.
+These can be folded with kami but it is tough to do neatly (see purple octos in image). (Though the kami is nice because you can blow up the octopus like a waterbomb.) The body should be folded dry and is easier to fold with a weightier paper (light cardstock 40lb or greater). Watercolor paper (130lb) is tough for shaping the arms but works well with some determination and makes for some nice decoration possibilities (pink and white octos in example image). I am a sucker for capillary action and using salt to mottle the watercolor effects.
+
+![Example image of several folded octopi](pics/WaterColorPaperPaintedOctos.jpeg)
+
 
 Dry fold the arms to get good creases but then dampen to give more life. You can dampen the body too but it isn't likely to have much effect.
 
@@ -29,6 +32,10 @@ Repeat 8 times.
 ![Octopus bottom after the swivel folds](pics/octo-arm5.png "Octopus bottom finished swivel folds")
 
 If you are trying for a maximum arm length, you may need to do another swivel fold to get rid of the between arm webbing.
+
+The tallOctopusPrecreads.svg has a slightly different version leading to a taller octopus. The one on the left is the normal fold, on the right is the taller one:
+
+![Regular and tall octopus](pics/NormalAndTallOcto.jpeg "Regular octopus (left) and tall (right)")
 
 
 # Development 
