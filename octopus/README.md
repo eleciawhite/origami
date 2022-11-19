@@ -33,6 +33,9 @@ Repeat 8 times.
 
 If you are trying for a maximum arm length, you may need to do another swivel fold to get rid of the between arm webbing.
 
+![Finished octopus](pics/fridayNightPartyOctopus.jpeg "Finished octopus")
+
+
 The tallOctopusPrecreads.svg has a slightly different version leading to a taller octopus. The one on the left is the normal fold, on the right is the taller one:
 
 ![Regular and tall octopus](pics/NormalAndTallOcto.jpeg "Regular octopus (left) and tall (right)")
